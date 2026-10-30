@@ -6,9 +6,9 @@ This repository contains the CraftMeetCode contract, collection assets, artwork 
 
 The site can be hosted as static files without a backend. GitHub Pages serves the root `index.html`; the WebDev project is configured to build from `site/`. The site includes a pixel-art gallery, token ID and trait lookup, responsive navigation, FAQs, and mint status.
 
-The NFT contract is deployed on BNB Mainnet at `0x49123D2D219542DE882619180Af86Fc78c7C0c8E`. Minting and agent access remain intentionally disabled in `site/config.js` (`mintEnabled: false`, `agentEnabled: false`). **Do not enable either feature until the owner approves the launch and the agent backend is verified.**
+The replacement NFT contract is deployed on BNB Mainnet at `0x0A7Fe9D062Dd2C94Ad224aE68e4c788D479d2946`. Its free phase costs `0 BNB` plus network gas; its paid phase costs `0.001 BNB`. Minting and agent access remain intentionally disabled in `site/config.js` (`mintEnabled: false`, `agentEnabled: false`). **Do not enable either feature until the owner approves the launch and the agent backend is verified.**
 
-The current deployed contract charges `0.0001 BNB` for the free phase. A replacement contract with a `0 BNB` free phase (gas is still paid by the minter) has been compiled and embedded in the owner deploy console, but it has not been deployed yet. Do not update the frontend contract address until the owner approves and confirms the replacement deployment.
+The replacement contract owner is `0xEa92A9Df3ad64B2de2e84CCB2cf96b216B06C9BB`; the configured payout wallet is `0x7fE99e4Ac8849bc4D8998288ddA25b56FF798F86`. Metadata points to `https://craftmeetscode.net/assets/metadata/` and remains editable until the owner calls `lockMetadata()`.
 
 ## NFT-gated agent MVP
 
@@ -24,7 +24,7 @@ The repository now includes a serverless reference endpoint at `api/agent.js`. D
 
 1. Test `CraftMeetCode.sol` on BNB Testnet and complete a security audit before accepting mainnet payments.
 2. The metadata currently uses the website-hosted image URLs `https://craftmeetscode.net/assets/images/<tokenId>.png`. The matching metadata base URI for this non-IPFS deployment is `https://craftmeetscode.net/assets/metadata/`.
-3. The deployed contract address is `0x49123D2D219542DE882619180Af86Fc78c7C0c8E`; verify the contract address and bytecode using the network explorer.
+3. The deployed contract address is `0x0A7Fe9D062Dd2C94Ad224aE68e4c788D479d2946`; verify the contract address and bytecode using the network explorer.
 4. Set the contract address, payout wallet, chain ID, RPC endpoint, and prices in `site/config.js` to match the deployed contract. Set `mintEnabled` to `true` only after verifying the address and on-chain state. Never put a private key or seed phrase in frontend code.
 5. Confirm that each mint phase is opened on-chain before enabling its button, and test the entire flow on testnet before announcing a mainnet launch.
 

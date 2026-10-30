@@ -1,7 +1,7 @@
 const { ethers } = require("ethers");
 
 const CONTRACT_ABI = ["function balanceOf(address owner) view returns (uint256)"];
-const CONTRACT_ADDRESS = process.env.CMC_CONTRACT_ADDRESS || "0x49123D2D219542DE882619180Af86Fc78c7C0c8E";
+const CONTRACT_ADDRESS = process.env.CMC_CONTRACT_ADDRESS || "0x0A7Fe9D062Dd2C94Ad224aE68e4c788D479d2946";
 const RPC_URL = process.env.CMC_RPC_URL || "https://bsc-dataseed.binance.org";
 const CHAIN_ID = 56;
 const MAX_MESSAGE_AGE_MS = 10 * 60 * 1000;
