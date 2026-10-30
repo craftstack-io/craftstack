@@ -241,7 +241,7 @@
   let onChainReady = false;
 
   async function loadStats() {
-    if (!contractReady) return;
+    if (!collectionReady) return;
     onChainReady = false;
     if (freeButton) freeButton.disabled = true;
     if (paidButton) paidButton.disabled = true;
@@ -271,19 +271,21 @@
       if (freeTrack) freeTrack.style.width = `${Math.min(100, freeCount / config.freeSupply * 100)}%`;
       if (paidTrack) paidTrack.style.width = `${Math.min(100, paidCount / config.paidSupply * 100)}%`;
       onChainReady = true;
+      const freeMintEnabled = Boolean(config.mintEnabled && freeOpen);
+      const paidMintEnabled = Boolean(config.mintEnabled && paidOpen);
       if (freeButton) {
-        freeButton.disabled = !freeOpen;
-        freeButton.textContent = freeOpen ? "Connect & mint" : "Phase closed";
-        freeButton.classList.toggle("button-disabled", !freeOpen);
+        freeButton.disabled = !freeMintEnabled;
+        freeButton.textContent = freeMintEnabled ? "Connect & mint" : (freeOpen ? "Launch pending" : "Phase closed");
+        freeButton.classList.toggle("button-disabled", !freeMintEnabled);
       }
       if (paidButton) {
-        paidButton.disabled = !paidOpen;
-        paidButton.textContent = paidOpen ? "Connect & mint" : "Phase closed";
-        paidButton.classList.toggle("button-disabled", !paidOpen);
+        paidButton.disabled = !paidMintEnabled;
+        paidButton.textContent = paidMintEnabled ? "Connect & mint" : (paidOpen ? "Launch pending" : "Phase closed");
+        paidButton.classList.toggle("button-disabled", !paidMintEnabled);
       }
-      const mintOpen = Boolean(freeOpen || paidOpen);
+      const mintOpen = Boolean(config.mintEnabled && (freeOpen || paidOpen));
       if (statusTitle) statusTitle.textContent = mintOpen ? "CONTRACT VERIFIED · MINT OPEN" : "CONTRACT VERIFIED · MINT CLOSED";
-      if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; the contract owner has not opened the mint phase yet.";
+      if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; minting remains disabled until the owner approves the launch.";
     } catch (error) {
       onChainReady = false;
       if (freeButton) freeButton.disabled = true;
@@ -294,7 +296,7 @@
   }
 
   async function connectAndMint(kind) {
-    if (!onChainReady) return;
+    if (!onChainReady || !contractReady) return;
     if (!window.ethereum || !window.ethers?.providers?.Web3Provider) {
       if (statusDetail) statusDetail.textContent = "No wallet was found or ethers.js is unavailable. No transaction was submitted.";
       return;
@@ -336,26 +338,20 @@
     }
   }
 
-  if (!contractReady) {
-    if (freeButton) freeButton.disabled = true;
-    if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = collectionReady ? "CONTRACT VERIFIED · MINT CLOSED" : "CONTRACT NOT LIVE";
-    if (statusDetail) statusDetail.textContent = collectionReady ? "The contract is deployed and verified, but minting remains disabled until the owner approves it. This page will not submit any transactions." : "Minting is not available yet. This page will not submit any transactions.";
+  if (freeButton) {
+    freeButton.disabled = true;
+    freeButton.addEventListener("click", () => connectAndMint("free"));
+  }
+  if (paidButton) {
+    paidButton.disabled = true;
+    paidButton.addEventListener("click", () => connectAndMint("paid"));
+  }
+  if (!collectionReady) {
+    if (statusTitle) statusTitle.textContent = "CONTRACT NOT LIVE";
+    if (statusDetail) statusDetail.textContent = "Minting is not available yet. This page will not submit any transactions.";
   } else {
-    if (freeButton) {
-      freeButton.disabled = false;
-      freeButton.classList.remove("button-disabled");
-      freeButton.textContent = "Connect & mint";
-      freeButton.addEventListener("click", () => connectAndMint("free"));
-    }
-    if (paidButton) {
-      paidButton.disabled = false;
-      paidButton.classList.remove("button-disabled");
-      paidButton.textContent = "Connect & mint";
-      paidButton.addEventListener("click", () => connectAndMint("paid"));
-    }
     if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
     if (statusDetail) statusDetail.textContent = `Verifying the contract on chain ID ${config.chainId} before enabling minting.`;
-    loadStats();
   }
+  loadStats();
 })();
