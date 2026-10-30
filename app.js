@@ -285,7 +285,7 @@
       }
       const mintOpen = Boolean(config.mintEnabled && (freeOpen || paidOpen));
       if (statusTitle) statusTitle.textContent = mintOpen ? "CONTRACT VERIFIED · MINT OPEN" : "CONTRACT VERIFIED · MINT CLOSED";
-      if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; minting remains disabled until the owner approves the launch.";
+      if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; free mint is open and paid mint remains closed.";
     } catch (error) {
       onChainReady = false;
       if (freeButton) freeButton.disabled = true;
@@ -347,8 +347,8 @@
     paidButton.addEventListener("click", () => connectAndMint("paid"));
   }
   if (!collectionReady) {
-    if (statusTitle) statusTitle.textContent = "CONTRACT NOT LIVE";
-    if (statusDetail) statusDetail.textContent = "Minting is not available yet. This page will not submit any transactions.";
+    if (statusTitle) statusTitle.textContent = "CONTRACT NOT VERIFIED";
+    if (statusDetail) statusDetail.textContent = "Minting is unavailable until the contract can be verified on-chain.";
   } else {
     if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
     if (statusDetail) statusDetail.textContent = `Verifying the contract on chain ID ${config.chainId} before enabling minting.`;

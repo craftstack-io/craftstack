@@ -7,7 +7,7 @@ window.CMC_CONFIG = Object.freeze({
   contractAddress: "0x0A7Fe9D062Dd2C94Ad224aE68e4c788D479d2946",
   ownerAddress: "0x7fE99e4Ac8849bc4D8998288ddA25b56FF798F86",
   chainId: 56,
-  mintEnabled: false,
+  mintEnabled: true,
   freeFee: "0",
   paidPrice: "0.001",
   freeSupply: 5000,

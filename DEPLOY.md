@@ -21,7 +21,7 @@ Compile with Solidity `0.8.20` and the OpenZeppelin dependencies available to Re
 
 ## Mint safety gate
 
-Minting is closed by default because `freeOpen` and `paidOpen` are initialized to `false`. After deployment, verify the contract address, owner, payout wallet, bytecode, metadata, and testnet behavior first. Only the contract owner can call:
+Minting is closed by default because `freeOpen` and `paidOpen` are initialized to `false`. After deployment, verify the contract address, owner, payout wallet, bytecode, metadata, and testnet behavior first. The free phase is now open; only the contract owner can call:
 
 ```text
 setOpen(true, true)
@@ -33,15 +33,15 @@ Do not call `setOpen(true, true)` until the owner has explicitly approved the la
 setOpen(false, false)
 ```
 
-The website also keeps mint disabled until `site/config.js` is updated with the verified address, owner address, correct chain ID/RPC, and `mintEnabled: true`. Updating that frontend flag alone does not open the contract; the on-chain `setOpen` state remains the final gate.
+The website now points to the verified address, owner/payout configuration, chain ID/RPC, and `mintEnabled: true`. The frontend flag alone does not open the contract; the on-chain `setOpen` state remains the final gate. Free mint is currently open and paid mint remains closed.
 
 ## After owner approval
 
 1. Verify the deployed contract on the network explorer.
 2. Confirm `owner()` is the expected owner wallet and `payoutWallet()` is correct.
 3. Confirm `freeOpen()` and `paidOpen()` are still `false`.
-4. Update `site/config.js` with the verified deployment values and keep `agentEnabled: false` until the agent backend is ready.
-5. Only after a separate launch approval should the owner call `setOpen(true, false)` or `setOpen(true, true)` from the owner wallet.
+4. `site/config.js` now reflects the verified deployment and free mint state; keep `agentEnabled: false` until the agent backend is ready.
+5. Paid mint remains closed until a separate launch approval calls `setOpen(true, true)` from the owner wallet.
 
 Never share a seed phrase or private key. A deployment link cannot approve transactions on behalf of the owner wallet.
 
