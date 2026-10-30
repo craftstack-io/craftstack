@@ -1,0 +1,47 @@
+{
+  "name": "craftmeetcode #7000",
+  "description": "craftmeetcode: 10,000 pixel craftsman-bots forged where craft meets code. 5,000 free mint, 5,000 paid mint on BNB Chain.",
+  "image": "ipfs://REPLACE_WITH_IMAGES_CID/7000.png",
+  "attributes": [
+    {
+      "trait_type": "Body",
+      "value": "Pearl"
+    },
+    {
+      "trait_type": "Eye Color",
+      "value": "Red"
+    },
+    {
+      "trait_type": "Background",
+      "value": "Teal"
+    },
+    {
+      "trait_type": "Eyes",
+      "value": "Cross"
+    },
+    {
+      "trait_type": "Mouth",
+      "value": "Line"
+    },
+    {
+      "trait_type": "Headgear",
+      "value": "Twin Antenna"
+    },
+    {
+      "trait_type": "Ears",
+      "value": "Yes"
+    },
+    {
+      "trait_type": "Hammer",
+      "value": "Yes"
+    },
+    {
+      "trait_type": "Chest Badge",
+      "value": "Face"
+    },
+    {
+      "trait_type": "Sparkles",
+      "value": "Yes"
+    }
+  ]
+}
