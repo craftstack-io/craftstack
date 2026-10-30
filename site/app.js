@@ -287,18 +287,23 @@
   const statusDetail = $("#statusDetail");
 
   let onChainReady = false;
+  let hasLoadedStats = false;
+  const lastKnownCounts = { free: null, paid: null };
 
   function createReadProvider() {
-    const urls = [...new Set(config.rpcUrls || [config.rpcUrl])].filter(Boolean);
     const Provider = window.ethers.providers.StaticJsonRpcProvider || window.ethers.providers.JsonRpcProvider;
     const network = { name: "bnb", chainId: Number(config.chainId) };
-    const entries = urls.map((url, index) => ({
-      provider: new Provider(url, network),
-      priority: index + 1,
-      weight: 1,
-      stallTimeout: 1800
-    }));
-    return entries.length > 1 ? new window.ethers.providers.FallbackProvider(entries, 1) : entries[0].provider;
+    return new Provider(config.fastRpcUrl || config.rpcUrl, network);
+  }
+
+  function updateLocalSupply(kind, amount) {
+    if (!Number.isFinite(lastKnownCounts[kind])) return;
+    lastKnownCounts[kind] += amount;
+    const count = lastKnownCounts[kind];
+    const supply = Number(kind === "free" ? config.freeSupply : config.paidSupply);
+    const countNode = $(`#${kind}Count`);
+    if (countNode) countNode.textContent = `${count.toLocaleString("en-US")} / ${supply.toLocaleString("en-US")} minted`;
+    animateRemaining(`#${kind}Remaining`, supply - count, kind === "free" ? "Free supply remaining" : "Paid supply remaining");
   }
 
   function animateRemaining(selector, target, label) {
@@ -322,10 +327,12 @@
   async function loadStats() {
     if (!collectionReady) return;
     onChainReady = false;
-    if (freeButton) freeButton.disabled = true;
-    if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
-    if (statusDetail) statusDetail.textContent = "Verifying the chain, contract address, payout wallet, and mint status…";
+    if (!hasLoadedStats) {
+      if (freeButton) freeButton.disabled = true;
+      if (paidButton) paidButton.disabled = true;
+      if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
+      if (statusDetail) statusDetail.textContent = "Verifying the chain, contract address, payout wallet, and mint status…";
+    }
     if (!window.ethers?.providers?.JsonRpcProvider) {
       if (statusDetail) statusDetail.textContent = "Pembaca kontrak tidak tersedia. Coba refresh atau periksa koneksi internet wallet.";
       return;
@@ -343,6 +350,9 @@
       if (String(payoutWallet).toLowerCase() !== String(config.ownerAddress).toLowerCase()) throw new Error("The on-chain payout wallet does not match the site’s configured ownerAddress.");
       const freeCount = free.toNumber();
       const paidCount = paid.toNumber();
+      lastKnownCounts.free = freeCount;
+      lastKnownCounts.paid = paidCount;
+      hasLoadedStats = true;
       $("#freeCount").textContent = `${freeCount.toLocaleString("en-US")} / ${Number(config.freeSupply).toLocaleString("en-US")} minted`;
       $("#paidCount").textContent = `${paidCount.toLocaleString("en-US")} / ${Number(config.paidSupply).toLocaleString("en-US")} minted`;
       animateRemaining("#freeRemaining", Number(config.freeSupply) - freeCount, "Free supply remaining");
@@ -374,6 +384,7 @@
     } catch (error) {
       if (config.mintEnabled && config.fallbackVerified) {
         onChainReady = true;
+        hasLoadedStats = true;
         const freeMintEnabled = Boolean(config.fallbackFreeOpen);
         const paidMintEnabled = Boolean(config.fallbackPaidOpen);
         if ($("#freeCount")) $("#freeCount").textContent = "Live supply unavailable";
@@ -427,6 +438,7 @@
         const tx = await (kind === "free" ? contract.freeMint({ value: price }) : contract.paidMint({ value: price }));
         if (statusDetail) statusDetail.textContent = `Transaksi ${i + 1}/${quantity} dikirim. Menunggu konfirmasi…`;
         await tx.wait();
+        updateLocalSupply(kind, 1);
       }
       if (statusDetail) statusDetail.textContent = `${quantity} NFT berhasil di-mint. Cek wallet dan BscScan untuk detail transaksi.`;
       updatePrompts();
