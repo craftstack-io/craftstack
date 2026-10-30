@@ -472,4 +472,5 @@
     if (statusDetail) statusDetail.textContent = `Verifying the contract on chain ID ${config.chainId} before enabling minting.`;
   }
   loadStats();
+  window.setInterval(loadStats, 15000);
 })();
