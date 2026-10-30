@@ -339,8 +339,8 @@
   if (!contractReady) {
     if (freeButton) freeButton.disabled = true;
     if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = "CONTRACT NOT LIVE";
-    if (statusDetail) statusDetail.textContent = "Minting is not available yet. This page will not submit any transactions.";
+    if (statusTitle) statusTitle.textContent = collectionReady ? "CONTRACT VERIFIED · MINT CLOSED" : "CONTRACT NOT LIVE";
+    if (statusDetail) statusDetail.textContent = collectionReady ? "The contract is deployed and verified, but minting remains disabled until the owner approves it. This page will not submit any transactions." : "Minting is not available yet. This page will not submit any transactions.";
   } else {
     if (freeButton) {
       freeButton.disabled = false;
