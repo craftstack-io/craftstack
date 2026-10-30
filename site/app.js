@@ -299,6 +299,24 @@
     return entries.length > 1 ? new window.ethers.providers.FallbackProvider(entries, 1) : entries[0].provider;
   }
 
+  function animateRemaining(selector, target, label) {
+    const node = $(selector);
+    if (!node) return;
+    const start = Number(node.dataset.value ?? target);
+    const end = Math.max(0, Number(target));
+    const duration = 700;
+    const started = performance.now();
+    const frame = now => {
+      const progress = Math.min(1, (now - started) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.round(start + (end - start) * eased);
+      node.textContent = `${label}: ${value.toLocaleString("en-US")}`;
+      if (progress < 1) requestAnimationFrame(frame);
+      else node.dataset.value = String(end);
+    };
+    requestAnimationFrame(frame);
+  }
+
   async function loadStats() {
     if (!collectionReady) return;
     onChainReady = false;
@@ -323,8 +341,10 @@
       if (String(payoutWallet).toLowerCase() !== String(config.ownerAddress).toLowerCase()) throw new Error("The on-chain payout wallet does not match the site’s configured ownerAddress.");
       const freeCount = free.toNumber();
       const paidCount = paid.toNumber();
-      $("#freeCount").textContent = `${freeCount.toLocaleString("en-US")} / 5.000 minted`;
-      $("#paidCount").textContent = `${paidCount.toLocaleString("en-US")} / 5.000 minted`;
+      $("#freeCount").textContent = `${freeCount.toLocaleString("en-US")} / ${Number(config.freeSupply).toLocaleString("en-US")} minted`;
+      $("#paidCount").textContent = `${paidCount.toLocaleString("en-US")} / ${Number(config.paidSupply).toLocaleString("en-US")} minted`;
+      animateRemaining("#freeRemaining", Number(config.freeSupply) - freeCount, "Free supply remaining");
+      animateRemaining("#paidRemaining", Number(config.paidSupply) - paidCount, "Paid supply remaining");
       const freeTrack = freeButton?.closest(".mint-card")?.querySelector(".progress-track span");
       const paidTrack = paidButton?.closest(".mint-card")?.querySelector(".progress-track span");
       if (freeTrack) freeTrack.style.width = `${Math.min(100, freeCount / config.freeSupply * 100)}%`;
