@@ -332,6 +332,10 @@
       onChainReady = true;
       const freeMintEnabled = Boolean(config.mintEnabled && freeOpen);
       const paidMintEnabled = Boolean(config.mintEnabled && paidOpen);
+      const freeStamp = freeButton?.closest(".mint-card")?.querySelector(".card-stamp");
+      const paidStamp = paidButton?.closest(".mint-card")?.querySelector(".card-stamp");
+      if (freeStamp) freeStamp.textContent = freeMintEnabled ? "OPEN" : "CLOSED";
+      if (paidStamp) paidStamp.textContent = paidMintEnabled ? "OPEN" : "CLOSED";
       if (freeButton) {
         freeButton.disabled = !freeMintEnabled;
         freeButton.textContent = freeMintEnabled ? "Connect & mint" : (freeOpen ? "Launch pending" : "Phase closed");
