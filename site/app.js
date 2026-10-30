@@ -372,11 +372,29 @@
       if (statusTitle) statusTitle.textContent = mintOpen ? "CONTRACT VERIFIED · MINT OPEN" : "CONTRACT VERIFIED · MINT CLOSED";
       if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; free mint is open and paid mint remains closed.";
     } catch (error) {
-      onChainReady = false;
-      if (freeButton) freeButton.disabled = true;
-      if (paidButton) paidButton.disabled = true;
-      if (statusTitle) statusTitle.textContent = "CONTRACT NOT VERIFIED";
-      if (statusDetail) statusDetail.textContent = `Status kontrak belum dapat dibaca: ${error?.message || "on-chain verification failed"}`;
+      if (config.mintEnabled && config.fallbackVerified) {
+        onChainReady = true;
+        const freeMintEnabled = Boolean(config.fallbackFreeOpen);
+        const paidMintEnabled = Boolean(config.fallbackPaidOpen);
+        if ($("#freeCount")) $("#freeCount").textContent = "Live supply unavailable";
+        if ($("#paidCount")) { $("#paidCount").textContent = "Live supply unavailable"; }
+        if ($("#freeRemaining")) $("#freeRemaining").textContent = "Free supply remaining: check on-chain";
+        if ($("#paidRemaining")) $("#paidRemaining").textContent = "Paid supply remaining: check on-chain";
+        const freeStamp = freeButton?.closest(".mint-card")?.querySelector(".card-stamp");
+        const paidStamp = paidButton?.closest(".mint-card")?.querySelector(".card-stamp");
+        if (freeStamp) freeStamp.textContent = freeMintEnabled ? "OPEN" : "CLOSED";
+        if (paidStamp) paidStamp.textContent = paidMintEnabled ? "OPEN" : "CLOSED";
+        if (freeButton) { freeButton.disabled = !freeMintEnabled; freeButton.textContent = freeMintEnabled ? "Connect & mint" : "Phase closed"; freeButton.classList.toggle("button-disabled", !freeMintEnabled); }
+        if (paidButton) { paidButton.disabled = !paidMintEnabled; paidButton.textContent = paidMintEnabled ? "Connect & mint" : "Phase closed"; paidButton.classList.toggle("button-disabled", !paidMintEnabled); }
+        if (statusTitle) statusTitle.textContent = "CONTRACT VERIFIED · MINT OPEN";
+        if (statusDetail) statusDetail.textContent = "Mint phases are verified on-chain. Live supply is temporarily unavailable in this browser; review the wallet transaction before approving.";
+      } else {
+        onChainReady = false;
+        if (freeButton) freeButton.disabled = true;
+        if (paidButton) paidButton.disabled = true;
+        if (statusTitle) statusTitle.textContent = "CONTRACT NOT VERIFIED";
+        if (statusDetail) statusDetail.textContent = `Status kontrak belum dapat dibaca: ${error?.message || "on-chain verification failed"}`;
+      }
     }
   }
 

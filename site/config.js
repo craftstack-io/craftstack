@@ -13,6 +13,9 @@ window.CMC_CONFIG = Object.freeze({
   freeSupply: 5000,
   paidSupply: 5000,
   rpcUrl: "https://bsc-dataseed.binance.org",
+  fallbackVerified: true,
+  fallbackFreeOpen: true,
+  fallbackPaidOpen: true,
   rpcUrls: [
     "https://bsc-dataseed.binance.org",
     "https://bsc-dataseed.bnbchain.org",
