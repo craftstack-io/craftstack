@@ -41,7 +41,7 @@ The website now points to the verified address, owner/payout configuration, chai
 2. Confirm `owner()` is the expected owner wallet and `payoutWallet()` is correct.
 3. Confirm `freeOpen()` and `paidOpen()` are still `false`.
 4. `site/config.js` now reflects the verified deployment and free mint state; keep `agentEnabled: false` until the agent backend is ready.
-5. Paid mint remains closed until a separate launch approval calls `setOpen(true, true)` from the owner wallet.
+5. Free and paid mint are now open after owner approval. Keep the owner transaction hash and explorer receipt for launch records.
 
 Never share a seed phrase or private key. A deployment link cannot approve transactions on behalf of the owner wallet.
 

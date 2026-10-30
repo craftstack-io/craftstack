@@ -6,7 +6,7 @@ This repository contains the CraftMeetCode contract, collection assets, artwork 
 
 The site can be hosted as static files without a backend. GitHub Pages serves the root `index.html`; the WebDev project is configured to build from `site/`. The site includes a pixel-art gallery, token ID and trait lookup, responsive navigation, FAQs, and mint status.
 
-The replacement NFT contract is deployed on BNB Mainnet at `0x0A7Fe9D062Dd2C94Ad224aE68e4c788D479d2946`. Its free phase costs `0 BNB` plus network gas; its paid phase costs `0.001 BNB`. Free mint is open on-chain and enabled in `site/config.js`; paid mint and agent access remain disabled until separately approved and verified.
+The replacement NFT contract is deployed on BNB Mainnet at `0x0A7Fe9D062Dd2C94Ad224aE68e4c788D479d2946`. Its free phase costs `0 BNB` plus network gas; its paid phase costs `0.001 BNB`. Free and paid mint are open on-chain and enabled in `site/config.js`; agent access remains disabled until separately approved and verified.
 
 The replacement contract owner is `0xEa92A9Df3ad64B2de2e84CCB2cf96b216B06C9BB`; the configured payout wallet is `0x7fE99e4Ac8849bc4D8998288ddA25b56FF798F86`. Metadata points to `https://craftmeetscode.net/assets/metadata/` and remains editable until the owner calls `lockMetadata()`.
 
