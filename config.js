@@ -1,7 +1,7 @@
 /*
- * Konfigurasi publik CraftMeetCode.
- * Mint sengaja OFF dan alamat masih kosong sampai deployment kontrak diselesaikan dan diverifikasi.
- * Tidak pernah memasukkan private key, seed phrase, atau kredensial di file frontend.
+ * Public CraftMeetCode configuration.
+ * Minting is intentionally OFF and the address stays empty until the contract is deployed and verified.
+ * Never put a private key, seed phrase, or credential in a frontend file.
  */
 window.CMC_CONFIG = Object.freeze({
   contractAddress: "0x0000000000000000000000000000000000000000",

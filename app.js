@@ -24,13 +24,13 @@
   menuButton?.addEventListener("click", () => {
     const open = menuButton.getAttribute("aria-expanded") !== "true";
     menuButton.setAttribute("aria-expanded", String(open));
-    menuButton.setAttribute("aria-label", open ? "Tutup menu navigasi" : "Buka menu navigasi");
+    menuButton.setAttribute("aria-label", open ? "Close navigation menu" : "Open navigation menu");
     nav?.classList.toggle("is-open", open);
     document.body.classList.toggle("menu-open", open);
   });
   $$("#siteNav a").forEach(link => link.addEventListener("click", () => {
     menuButton?.setAttribute("aria-expanded", "false");
-    menuButton?.setAttribute("aria-label", "Buka menu navigasi");
+    menuButton?.setAttribute("aria-label", "Open navigation menu");
     nav?.classList.remove("is-open");
     document.body.classList.remove("menu-open");
   }));
@@ -63,7 +63,7 @@
       item.append(label, document.createTextNode(value));
       container.append(item);
     });
-    $("#lookupCanvas")?.setAttribute("aria-label", `Preview pixel art untuk karya ${id}`);
+    $("#lookupCanvas")?.setAttribute("aria-label", `Pixel-art preview for collectible ${id}`);
     $$(".gallery-item").forEach(button => button.setAttribute("aria-pressed", String(Number(button.dataset.id) === id)));
   }
 
@@ -76,7 +76,7 @@
         input.focus();
       }
       const traits = $("#traits");
-      if (traits) traits.textContent = "Masukkan ID bilangan bulat dari 1 sampai 10.000.";
+      if (traits) traits.textContent = "Enter a whole-number ID from 1 to 10,000.";
       return;
     }
     input?.removeAttribute("aria-invalid");
@@ -90,7 +90,7 @@
     button.type = "button";
     button.className = "gallery-item";
     button.dataset.id = String(id);
-    button.setAttribute("aria-label", `Lihat preview karya dengan ID ${id}`);
+    button.setAttribute("aria-label", `View the preview for collectible ${id}`);
     button.setAttribute("aria-pressed", "false");
     const canvas = document.createElement("canvas");
     canvas.width = 32;
@@ -118,7 +118,7 @@
   if (heroCanvas) {
     let heroId = 7;
     draw(heroCanvas, heroId);
-    heroCanvas.setAttribute("aria-label", `Robot pixel-art contoh dari koleksi CraftMeetCode, karya ${heroId}`);
+    heroCanvas.setAttribute("aria-label", `Sample pixel-art robot from the CraftMeetCode collection, collectible ${heroId}`);
   }
 
   const freeButton = $("#freeMintButton");
@@ -133,27 +133,27 @@
     onChainReady = false;
     if (freeButton) freeButton.disabled = true;
     if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = "MEMERIKSA KONTRAK";
-    if (statusDetail) statusDetail.textContent = "Memverifikasi chain, alamat kontrak, payout wallet, dan status mint…";
+    if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
+    if (statusDetail) statusDetail.textContent = "Verifying the chain, contract address, payout wallet, and mint status…";
     if (!window.ethers?.providers?.JsonRpcProvider) {
-      if (statusDetail) statusDetail.textContent = "Layanan pembaca kontrak tidak tersedia. Mint tetap dinonaktifkan.";
+      if (statusDetail) statusDetail.textContent = "The contract reader is unavailable. Minting remains disabled.";
       return;
     }
     try {
       const provider = new window.ethers.providers.JsonRpcProvider(config.rpcUrl);
       const network = await provider.getNetwork();
-      if (Number(network.chainId) !== Number(config.chainId)) throw new Error("RPC mengarah ke jaringan yang berbeda dari chainId konfigurasi.");
+      if (Number(network.chainId) !== Number(config.chainId)) throw new Error("The RPC points to a different network than the configured chain ID.");
       const code = await provider.getCode(config.contractAddress);
-      if (!code || code === "0x") throw new Error("Tidak ditemukan bytecode kontrak pada alamat tersebut.");
+      if (!code || code === "0x") throw new Error("No contract bytecode was found at that address.");
       const contract = new window.ethers.Contract(config.contractAddress, abi, provider);
       const [free, paid, freeOpen, paidOpen, payoutWallet] = await Promise.all([
         contract.freeMinted(), contract.paidMinted(), contract.freeOpen(), contract.paidOpen(), contract.payoutWallet()
       ]);
-      if (String(payoutWallet).toLowerCase() !== String(config.ownerAddress).toLowerCase()) throw new Error("Payout wallet on-chain tidak sama dengan ownerAddress di konfigurasi situs.");
+      if (String(payoutWallet).toLowerCase() !== String(config.ownerAddress).toLowerCase()) throw new Error("The on-chain payout wallet does not match the site’s configured ownerAddress.");
       const freeCount = free.toNumber();
       const paidCount = paid.toNumber();
-      $("#freeCount").textContent = `${freeCount.toLocaleString("id-ID")} / 5.000 minted`;
-      $("#paidCount").textContent = `${paidCount.toLocaleString("id-ID")} / 5.000 minted`;
+      $("#freeCount").textContent = `${freeCount.toLocaleString("en-US")} / 5.000 minted`;
+      $("#paidCount").textContent = `${paidCount.toLocaleString("en-US")} / 5.000 minted`;
       const freeTrack = freeButton?.closest(".mint-card")?.querySelector(".progress-track span");
       const paidTrack = paidButton?.closest(".mint-card")?.querySelector(".progress-track span");
       if (freeTrack) freeTrack.style.width = `${Math.min(100, freeCount / config.freeSupply * 100)}%`;
@@ -161,30 +161,30 @@
       onChainReady = true;
       if (freeButton) {
         freeButton.disabled = !freeOpen;
-        freeButton.textContent = freeOpen ? "Connect & mint" : "Fase ditutup";
+        freeButton.textContent = freeOpen ? "Connect & mint" : "Phase closed";
         freeButton.classList.toggle("button-disabled", !freeOpen);
       }
       if (paidButton) {
         paidButton.disabled = !paidOpen;
-        paidButton.textContent = paidOpen ? "Connect & mint" : "Fase ditutup";
+        paidButton.textContent = paidOpen ? "Connect & mint" : "Phase closed";
         paidButton.classList.toggle("button-disabled", !paidOpen);
       }
       const mintOpen = Boolean(freeOpen || paidOpen);
-      if (statusTitle) statusTitle.textContent = mintOpen ? "KONTRAK TERVERIFIKASI · MINT OPEN" : "KONTRAK TERVERIFIKASI · MINT TERTUTUP";
-      if (statusDetail) statusDetail.textContent = mintOpen ? "Pemeriksaan on-chain lulus. Konfirmasi jaringan dan rincian transaksi di wallet sebelum menyetujui." : "Alamat, jaringan, dan payout wallet cocok; fase mint masih ditutup oleh owner kontrak.";
+      if (statusTitle) statusTitle.textContent = mintOpen ? "CONTRACT VERIFIED · MINT OPEN" : "CONTRACT VERIFIED · MINT CLOSED";
+      if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; the contract owner has not opened the mint phase yet.";
     } catch (error) {
       onChainReady = false;
       if (freeButton) freeButton.disabled = true;
       if (paidButton) paidButton.disabled = true;
-      if (statusTitle) statusTitle.textContent = "KONTRAK BELUM TERVERIFIKASI";
-      if (statusDetail) statusDetail.textContent = `Mint tetap nonaktif: ${error?.message || "pemeriksaan on-chain gagal"}`;
+      if (statusTitle) statusTitle.textContent = "CONTRACT NOT VERIFIED";
+      if (statusDetail) statusDetail.textContent = `Minting remains disabled: ${error?.message || "on-chain verification failed"}`;
     }
   }
 
   async function connectAndMint(kind) {
     if (!onChainReady) return;
     if (!window.ethereum || !window.ethers?.providers?.Web3Provider) {
-      if (statusDetail) statusDetail.textContent = "Wallet tidak ditemukan atau ethers.js tidak tersedia. Tidak ada transaksi yang dikirim.";
+      if (statusDetail) statusDetail.textContent = "No wallet was found or ethers.js is unavailable. No transaction was submitted.";
       return;
     }
     const button = kind === "free" ? freeButton : paidButton;
@@ -206,19 +206,19 @@
         }]);
       }
       const selectedNetwork = await provider.getNetwork();
-      if (Number(selectedNetwork.chainId) !== Number(config.chainId)) throw new Error("Wallet masih berada di jaringan yang salah.");
+      if (Number(selectedNetwork.chainId) !== Number(config.chainId)) throw new Error("The wallet is still connected to the wrong network.");
       const signer = provider.getSigner();
       const contract = new window.ethers.Contract(config.contractAddress, abi, signer);
       const price = kind === "free" ? config.freeFee : config.paidPrice;
-      if (statusDetail) statusDetail.textContent = "Periksa nama kontrak, nilai, jaringan, dan biaya gas di wallet sebelum menyetujui.";
+      if (statusDetail) statusDetail.textContent = "Review the contract name, amount, network, and gas fee in your wallet before approving.";
       const tx = await (kind === "free" ? contract.freeMint({ value: window.ethers.utils.parseEther(price) }) : contract.paidMint({ value: window.ethers.utils.parseEther(price) }));
-      if (statusDetail) statusDetail.textContent = "Transaksi dikirim. Menunggu konfirmasi jaringan…";
+      if (statusDetail) statusDetail.textContent = "Transaction submitted. Waiting for network confirmation…";
       await tx.wait();
-      if (statusDetail) statusDetail.textContent = `Mint berhasil. Hash transaksi: ${tx.hash}`;
+      if (statusDetail) statusDetail.textContent = `Mint successful. Transaction hash: ${tx.hash}`;
       await loadStats();
     } catch (error) {
-      const message = error?.reason || error?.data?.message || error?.message || "Permintaan mint gagal.";
-      if (statusDetail) statusDetail.textContent = `Mint tidak berhasil: ${message}`;
+      const message = error?.reason || error?.data?.message || error?.message || "Mint request failed.";
+      if (statusDetail) statusDetail.textContent = `Mint failed: ${message}`;
     } finally {
       if (button) button.disabled = false;
     }
@@ -227,8 +227,8 @@
   if (!contractReady) {
     if (freeButton) freeButton.disabled = true;
     if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = "KONTRAK BELUM LIVE";
-    if (statusDetail) statusDetail.textContent = "Mint belum tersedia. Tidak ada transaksi yang akan dikirim dari halaman ini.";
+    if (statusTitle) statusTitle.textContent = "CONTRACT NOT LIVE";
+    if (statusDetail) statusDetail.textContent = "Minting is not available yet. This page will not submit any transactions.";
   } else {
     if (freeButton) {
       freeButton.disabled = false;
@@ -242,8 +242,8 @@
       paidButton.textContent = "Connect & mint";
       paidButton.addEventListener("click", () => connectAndMint("paid"));
     }
-    if (statusTitle) statusTitle.textContent = "MEMERIKSA KONTRAK";
-    if (statusDetail) statusDetail.textContent = `Memverifikasi kontrak pada chain ID ${config.chainId} sebelum mint dibuka.`;
+    if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
+    if (statusDetail) statusDetail.textContent = `Verifying the contract on chain ID ${config.chainId} before enabling minting.`;
     loadStats();
   }
 })();

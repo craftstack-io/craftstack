@@ -1,10 +1,10 @@
-/* craftmeetcode art engine — dipakai website DAN generator, jadi gambar preview = gambar NFT asli */
+/* CraftMeetCode art engine — shared by the website and generator, so previews match the generated NFT artwork. */
 function cmcRng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const CMC_METALS=[["Gold","#fff0b0","#ffd24a","#d49a1c","#8a5a0c"],["Ruby","#ffb8b8","#ef4a4a","#b02323","#6a1010"],["Emerald","#b8ffd2","#3fd37a","#1f9a52","#0f5c2e"],["Sapphire","#bcdaff","#4a8cf0","#2a5cb8","#142f6e"],["Amethyst","#ecc8ff","#a65df0","#7332b8","#401569"],["Cyan","#c8fbff","#3fd6e0","#1d9aa8","#0e5560"],["Rose","#ffd2ec","#ff6fb8","#c73a85","#7a1a50"],["Silver","#f4f1ea","#c8c2b4","#8f897c","#585247"],["Copper","#ffc89a","#e08a4a","#a85420","#6a300e"],["Obsidian","#9096aa","#4f5466","#2f3342","#171923"],["Lime","#f2ffb4","#b6f03a","#7bb81c","#46690c"],["Pearl","#ffffff","#e8ecf2","#aab3c2","#6a7385"]];
 const CMC_GLOWS=[["Cyan","#4fe3ff"],["Orange","#ff7a2e"],["Lime","#7dff6a"],["White","#ffffff"],["Red","#ff4f6a"],["Yellow","#ffe45c"],["Violet","#d98bff"],["Pink","#ff5cc8"]];
 const CMC_BGS=[["Bronze","#1c150a","#120d06"],["Teal","#0f1b1c","#0a1213"],["Wine","#201014","#150a0c"],["Navy","#111424","#0a0c17"],["Violet","#1a1030","#100a1e"],["Forest","#0e1d12","#08120a"],["Slate","#1d1a22","#121016"],["Rust","#2a1208","#1a0b05"],["Ocean","#0c2230","#07151e"],["Plum","#2a1024","#1a0a16"]];
 const CMC_HATS=[["Orange","#ff9a2e","#ffc76a","#b85c10"],["Yellow","#ffd24a","#fff0b0","#c98a14"],["Red","#ef4a4a","#ff9a9a","#a02020"],["Blue","#4a8cf0","#9cc4ff","#2a5cb8"],["Green","#3fd37a","#a0ffc4","#1f8a4c"],["Purple","#a65df0","#d8b0ff","#6a2ab0"]];
-/* gambar token `id` (1-10000) ke context 32x32, return daftar trait */
+/* Draw token `id` (1–10,000) to a 32×32 context and return its trait list. */
 function drawToken(c,id){
   const r=cmcRng(id*7919+13);
   const P=(x,y,k)=>{c.fillStyle=k;c.fillRect(x,y,1,1)};
