@@ -15,7 +15,7 @@ The source remains available for review in [`CraftMeetCode.sol`](CraftMeetCode.s
 1. `payoutWallet_`: the wallet that receives mint payments. Use the verified owner/payout wallet. Do not paste a seed phrase or private key anywhere.
 2. `baseURI_`: the metadata URI ending in `/`, for example `ipfs://<METADATA_CID>/`. Do not deploy with `REPLACE_WITH_IMAGES_CID`.
 
-Compile with Solidity `0.8.20` and the OpenZeppelin dependencies available to Remix. Start on BNB Smart Chain Testnet (`chainId 97`) and verify the bytecode and metadata before considering mainnet (`chainId 56`).
+Compile with Solidity `0.8.20` and the OpenZeppelin dependencies available to Remix. Halaman deploy memilih BNB Smart Chain Mainnet (`chainId 56`) sebagai default. Pastikan bytecode, metadata, payout wallet, dan biaya gas sudah diverifikasi sebelum menekan Confirm. BNB Testnet (`chainId 97`) tetap tersedia sebagai pilihan uji.
 
 ## Mint safety gate
 
