@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0d1117">
-  <meta name="description" content="CraftMeetCode is a collection of 10,000 unique pixel-art collectibles on BNB Chain—where craft meets code. Minting will open once the contract is ready.">
+  <meta name="description" content="CraftMeetCode is a collection of 10,000 unique pixel-art collectibles on BNB Chain. The contract is deployed; minting remains closed until owner approval.">
   <meta name="keywords" content="CraftMeetCode, NFT, pixel art, BNB Chain, digital collectibles">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="CraftMeetCode">
   <meta property="og:title" content="CraftMeetCode — Pixel works, crafted with code">
-  <meta property="og:description" content="10,000 unique pixel-art collectibles. Crafted with care and powered by code. Minting is coming to BNB Chain.">
+  <meta property="og:description" content="10,000 unique pixel-art collectibles on BNB Chain. The contract is deployed; minting remains closed until owner approval.">
   <meta property="og:image" content="/manus-storage/async-images/LbXIV2jcFmmgEiFW5KiIiB/image-1.webp">
   <meta property="og:image:alt" content="A pixel-art CraftMeetCode artisan robot in a dark digital workshop with neon lime accents">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="CraftMeetCode — Pixel works, crafted with code">
-  <meta name="twitter:description" content="10,000 unique pixel-art collectibles. Crafted with care and powered by code. Minting is coming to BNB Chain.">
+  <meta name="twitter:description" content="10,000 unique pixel-art collectibles on BNB Chain. The contract is deployed; minting remains closed until owner approval.">
   <meta name="twitter:image" content="/manus-storage/async-images/LbXIV2jcFmmgEiFW5KiIiB/image-1.webp">
   <title>CraftMeetCode — Pixel works, crafted with code</title>
   <link rel="icon" type="image/svg+xml" href="./assets/cmc-mark.svg">
@@ -25,7 +25,7 @@
   <script defer src="./config.js?v=en-20261030-1747"></script>
   <script defer src="./art.js?v=en-20261030-1747"></script>
   <script async src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" crossorigin="anonymous"></script>
-  <script defer src="./app.js?v=en-20261030-1747"></script>
+  <script defer src="./app.js?v=cmc-onchain-check-20261030-1"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -106,8 +106,8 @@
 
     <section class="mint-section" id="mint" aria-labelledby="mintTitle">
       <div class="section-wrap mint-inner">
-        <div class="mint-copy"><p class="eyebrow">02 / MINT STATUS</p><h2 id="mintTitle">The workshop<br>is <span>getting ready.</span></h2><p class="section-intro">The NFT contract is deployed and verified on BNB Mainnet. Minting remains disabled until the owner explicitly approves opening the phases.</p>
-          <div class="status-card" role="status" aria-live="polite"><span class="status-led" aria-hidden="true"></span><div><strong id="contractStatus">CONTRACT VERIFIED · MINT CLOSED</strong><p id="statusDetail">The contract is deployed, but minting remains disabled until the owner approves it. This page will not submit any transactions.</p></div></div>
+        <div class="mint-copy"><p class="eyebrow">02 / MINT STATUS</p><h2 id="mintTitle">The workshop<br>is <span>getting ready.</span></h2><p class="section-intro">The NFT contract is deployed on BNB Mainnet. The site checks its address, chain, owner, payout wallet, prices, supply, and phase state read-only. Mint buttons remain disabled until the owner approves minting.</p>
+          <div class="status-card" role="status" aria-live="polite"><span class="status-led" aria-hidden="true"></span><div><strong id="contractStatus">CHECKING ON-CHAIN STATUS</strong><p id="statusDetail">Checking the deployed contract read-only. Mint buttons remain disabled unless on-chain checks pass and the owner has enabled minting in site config.</p></div></div>
         </div>
         <div class="mint-cards">
           <article class="mint-card">
@@ -115,14 +115,14 @@
             <h3>Free mint</h3><p class="mint-price">0 <small>+ 0.0001 BNB fee</small></p>
             <p class="mint-description">5,000 collectibles · service fee is paid to the creator wallet · network gas is separate.</p>
             <div class="progress-track" aria-label="Free mint progress is not available yet"><span></span></div>
-            <div class="mint-card-foot"><span id="freeCount">Awaiting contract</span><button class="button button-disabled" id="freeMintButton" type="button" disabled>Not available yet</button></div>
+            <div class="mint-card-foot"><span id="freeCount">Checking status…</span><button class="button button-disabled" id="freeMintButton" type="button" disabled>Not available yet</button></div>
           </article>
           <article class="mint-card mint-card-featured">
             <div class="mint-card-top"><span>PHASE 02</span><span class="card-stamp">SOON</span></div>
             <h3>Collector mint</h3><p class="mint-price">0.001 <small>BNB</small></p>
             <p class="mint-description">5,000 collectibles · fixed price per collectible · network gas is charged separately.</p>
             <div class="progress-track" aria-label="Collector mint progress is not available yet"><span></span></div>
-            <div class="mint-card-foot"><span id="paidCount">Awaiting contract</span><button class="button button-disabled" id="paidMintButton" type="button" disabled>Not available yet</button></div>
+            <div class="mint-card-foot"><span id="paidCount">Checking status…</span><button class="button button-disabled" id="paidMintButton" type="button" disabled>Not available yet</button></div>
           </article>
         </div>
       </div>
@@ -142,9 +142,9 @@
         <div class="faq-list">
           <details><summary>What is CraftMeetCode?<span aria-hidden="true">+</span></summary><p>A collection of 10,000 craftsman-bot pixel-art collectibles. Each piece is generated by the same deterministic engine used for the previews on this site.</p></details>
           <details><summary>Is minting available yet?<span aria-hidden="true">+</span></summary><p>The contract is deployed on BNB Mainnet, but all transaction buttons remain disabled until the owner approves opening mint. Do not send funds to any unverified address.</p></details>
-          <details><summary>Is the “free mint” really free?<span aria-hidden="true">+</span></summary><p>The free phase has no artwork price, but the planned contract charges a 0.0001 BNB service fee. Network gas will be charged separately if minting opens.</p></details>
-          <details><summary>Which network is planned?<span aria-hidden="true">+</span></summary><p>BNB Chain. The contract is deployed on BNB Mainnet. Verify the address, owner, network, and metadata before launch.</p></details>
-          <details><summary>How can I verify a token and its metadata?<span aria-hidden="true">+</span></summary><p>Once the contract and metadata are announced, verify the address and transactions using the official blockchain explorer. Previews on this site are not proof of on-chain ownership.</p></details>
+          <details><summary>Is the “free mint” really free?<span aria-hidden="true">+</span></summary><p>The contract charges a 0.0001 BNB service fee for the free phase, plus network gas. Minting remains closed until the owner approves opening a phase.</p></details>
+          <details><summary>Which network is the collection on?<span aria-hidden="true">+</span></summary><p>BNB Smart Chain Mainnet (chain ID 56). Minting remains closed until owner approval.</p></details>
+          <details><summary>How can I verify a token and its metadata?<span aria-hidden="true">+</span></summary><p>Use the official blockchain explorer and the token metadata URL to verify a collectible. Previews on this site are not proof that a token has been minted or belongs to a wallet.</p></details>
         </div>
       </div>
     </section>
