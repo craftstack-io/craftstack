@@ -290,8 +290,10 @@
 
   function createReadProvider() {
     const urls = [...new Set(config.rpcUrls || [config.rpcUrl])].filter(Boolean);
+    const Provider = window.ethers.providers.StaticJsonRpcProvider || window.ethers.providers.JsonRpcProvider;
+    const network = { name: "bnb", chainId: Number(config.chainId) };
     const entries = urls.map((url, index) => ({
-      provider: new window.ethers.providers.JsonRpcProvider(url, Number(config.chainId)),
+      provider: new Provider(url, network),
       priority: index + 1,
       weight: 1,
       stallTimeout: 1800
