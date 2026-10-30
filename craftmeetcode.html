@@ -129,8 +129,12 @@
     </section>
 
     <section class="section-wrap section-block agent-section" id="agent" aria-labelledby="agentTitle">
-      <div class="agent-copy"><p class="eyebrow">03 / AGENT-READY</p><h2 id="agentTitle">Built for people.<br><span>Ready for agents.</span></h2><p class="section-intro">AI-agent minting remains on hold until the final contract address is available. We will not show prompts that could send funds to a placeholder address.</p></div>
-      <div class="agent-terminal" aria-label="Agent readiness status"><div class="terminal-bar"><span></span><span></span><span></span><b>CMC_AGENT://STATUS</b></div><div class="terminal-body"><p><span class="terminal-prompt">&gt;</span> contract.address</p><p class="terminal-value">PENDING_DEPLOYMENT</p><p><span class="terminal-prompt">&gt;</span> transaction.prompt</p><p class="terminal-muted">// available after the contract is live and verified</p><div class="terminal-rule"></div><p class="terminal-foot"><span class="live-dot" aria-hidden="true"></span> READ-ONLY MODE — NO TRANSACTIONS</p></div></div>
+      <div class="agent-copy"><p class="eyebrow">03 / NFT-GATED AGENT</p><h2 id="agentTitle">Your token.<br><span>Your conversation.</span></h2><p class="section-intro">Hubungkan wallet dan tanda tangani pesan untuk membuktikan kepemilikan NFT. Tidak ada transaksi, gas, atau private key yang diminta. Setelah kontrak dan layanan agent siap, persona bot akan terbuka berdasarkan token dan traits-nya.</p><div class="agent-safety"><span class="live-dot" aria-hidden="true"></span><span>OWNERSHIP CHECK · SIGNATURE ONLY</span></div></div>
+      <div class="agent-console" aria-label="NFT-gated agent">
+        <div class="terminal-bar"><span></span><span></span><span></span><b>CMC_AGENT://ACCESS</b></div>
+        <div class="agent-console-head"><div><strong id="agentAccessStatus" data-tone="muted">LOCKED · menunggu kontrak NFT terverifikasi</strong><p id="agentTokenCount">Belum ada wallet terhubung</p></div><button class="button button-primary" id="agentWalletButton" type="button">Connect wallet</button></div>
+        <div class="agent-chat is-locked" id="agentChat"><div class="agent-messages" id="agentMessages"><div class="agent-message agent-message-bot"><span class="agent-message-label">BOT</span><p>Agent terkunci. Wallet pemilik NFT dapat membuka percakapan.</p></div></div><div class="agent-composer"><textarea id="agentChatInput" rows="2" placeholder="Tulis pesan ke agent…" disabled></textarea><div class="agent-composer-actions"><button class="button button-quiet" id="agentTalkButton" type="button" disabled>Talk / mic</button><button class="button button-primary" id="agentSendButton" type="button" disabled>Send ↗</button></div></div></div>
+      </div>
     </section>
 
     <section class="faq-section" id="faq" aria-labelledby="faqTitle">

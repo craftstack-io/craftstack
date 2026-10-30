@@ -6,7 +6,15 @@ This repository contains the CraftMeetCode contract, collection assets, artwork 
 
 The site can be hosted as static files without a backend. GitHub Pages serves the root `index.html`; the WebDev project is configured to build from `site/`. The site includes a pixel-art gallery, token ID and trait lookup, responsive navigation, FAQs, and mint status.
 
-Minting is intentionally disabled in `site/config.js` (`mintEnabled: false`, zero contract address). No contract was deployed and no transactions were submitted as part of this work. **Do not enable minting until the contract and metadata have been tested and verified.**
+Minting and agent access are intentionally disabled in `site/config.js` (`mintEnabled: false`, `agentEnabled: false`, zero contract address). No contract was deployed and no transactions were submitted as part of this work. **Do not enable either feature until the contract, metadata, and agent backend have been tested and verified.**
+
+## NFT-gated agent MVP
+
+The frontend now includes an NFT-gated agent console. A visitor can connect a wallet, the site reads ERC-721 `balanceOf` over the configured RPC, and the owner signs a human-readable message. Signing does not submit a transaction and does not spend gas. The chat stays locked while the collection contract is unavailable or the wallet owns no NFT.
+
+After deployment, set `agentEnabled: true`, the verified `contractAddress`, and a HTTPS `agentEndpoint` in `site/config.js`. The endpoint receives `{ address, signature, message, tokenBalance, text, history }` and should independently recover the signer from the signature and re-check NFT ownership on the server before answering. Never authorize a request from the client-provided `tokenBalance` alone. `agentEndpoint` must be a backend proxy; do not put an AI provider key in this static frontend.
+
+The console includes browser speech-to-text when supported and optional browser text-to-speech when the endpoint returns `{ speak: true }`. Audio is not stored by this frontend. Production deployment should still define retention, moderation, rate limits, and abuse controls on the backend.
 
 ## Before enabling minting
 
@@ -17,3 +25,7 @@ Minting is intentionally disabled in `site/config.js` (`mintEnabled: false`, zer
 5. Confirm that each mint phase is opened on-chain before enabling its button, and test the entire flow on testnet before announcing a mainnet launch.
 
 The artwork generator is in `art.js` and `generate.js`. Follow the instructions in `generate.js` to regenerate assets, and ensure the metadata CID does not contain a placeholder.
+
+## Deployment link
+
+Use the [CraftMeetCode owner deploy console](deploy.html) for the guided flow, or open the [CraftMeetCode Remix deployment workspace](https://remix.ethereum.org/#url=https://raw.githubusercontent.com/craftstack-io/craftstack/main/CraftMeetCode.sol) to compile and deploy manually. Deployment still requires the owner wallet to approve the transaction. See [`DEPLOY.md`](DEPLOY.md) for constructor values, BNB Testnet-first steps, and the mint safety gate. `freeOpen` and `paidOpen` start as `false`; do not call `setOpen(true, true)` until the owner has explicitly approved the launch.

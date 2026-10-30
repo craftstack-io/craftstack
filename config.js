@@ -1,7 +1,7 @@
 /*
  * Public CraftMeetCode configuration.
- * Minting is intentionally OFF and the address stays empty until the contract is deployed and verified.
- * Never put a private key, seed phrase, or credential in a frontend file.
+ * Minting and agent access stay locked until the contract and service are deployed and verified.
+ * Never put a private key, seed phrase, AI API key, or credential in a frontend file.
  */
 window.CMC_CONFIG = Object.freeze({
   contractAddress: "0x0000000000000000000000000000000000000000",
@@ -12,5 +12,10 @@ window.CMC_CONFIG = Object.freeze({
   paidPrice: "0.001",
   freeSupply: 5000,
   paidSupply: 5000,
-  rpcUrl: "https://bsc-dataseed.binance.org"
+  rpcUrl: "https://bsc-dataseed.binance.org",
+  // Set these only after deployment and backend verification.
+  agentEnabled: false,
+  agentEndpoint: "",
+  collectionName: "CraftMeetCode",
+  agentName: "The Workshop Bot"
 });

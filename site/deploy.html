@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d1117">
+  <title>CraftMeetCode · Deploy</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/cmc-mark.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js" crossorigin="anonymous"></script>
+  <style>
+    :root{color-scheme:dark;--bg:#0d1117;--panel:#151e27;--panel2:#10171e;--line:#34414c;--muted:#9aa9a3;--text:#e7eee8;--lime:#b6f36b;--amber:#f2b45b;--red:#f27c6b;--mono:'Space Mono',monospace}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.7 var(--mono)}main{width:min(960px,calc(100% - 34px));margin:0 auto;padding:34px 0 70px}a{color:var(--lime)}h1{font-size:clamp(30px,6vw,60px);line-height:1.08;letter-spacing:-.08em;margin:10px 0 12px}h2{font-size:18px;margin:0 0 8px;letter-spacing:-.04em}.eyebrow{color:var(--lime);font-size:10px;letter-spacing:.14em}.lead{max-width:720px;color:var(--muted)}.topbar{display:flex;justify-content:space-between;gap:18px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:18px}.brand{color:var(--text);text-decoration:none;font-weight:700}.brand span{color:var(--lime)}button,input,select{font:inherit}button{border:1px solid var(--line);background:transparent;color:var(--text);padding:11px 14px;cursor:pointer}button:hover:not(:disabled){border-color:var(--lime);color:var(--lime)}button:disabled{opacity:.45;cursor:not-allowed}.primary{background:var(--lime);border-color:var(--lime);color:#101710;font-weight:700}.primary:hover:not(:disabled){background:#d0fb97;color:#101710}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}.card{padding:20px;background:var(--panel);border:1px solid var(--line)}.card.full{grid-column:1/-1}.step{color:var(--amber);font-size:10px;letter-spacing:.12em}.field{margin:14px 0}.field label{display:block;color:var(--muted);font-size:10px;margin-bottom:6px}.field input,.field select{width:100%;padding:11px;background:#0b1117;border:1px solid var(--line);color:var(--text)}.row{display:flex;gap:9px;flex-wrap:wrap}.row>*{flex:1}.status{margin-top:14px;padding:12px;border:1px solid #596a75;background:var(--panel2);color:var(--muted);font-size:11px;white-space:pre-wrap}.status[data-tone=good]{border-color:#65784e;color:var(--lime)}.status[data-tone=warn]{border-color:#80653f;color:var(--amber)}.status[data-tone=bad]{border-color:#80483f;color:var(--red)}.warning{border-color:#80653f;background:#211b13;color:#f2c47a}.small{color:var(--muted);font-size:10px}.check{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:10px 0;font-size:11px}.check strong{color:var(--amber)}.check strong.ok{color:var(--lime)}.log{min-height:90px;max-height:180px;overflow:auto;background:#0b1117;padding:12px;color:var(--muted);font-size:10px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}@media(max-width:700px){.topbar{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.card.full{grid-column:auto}.row>*{flex-basis:100%}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar"><a class="brand" href="./">craftmeet<span>code</span></a><button id="connect">Hubungkan wallet</button></div>
+    <p class="eyebrow">CRAFTMEETCODE · DEPLOY CONSOLE</p>
+    <h1>Owner tools.<br><span style="color:var(--lime)">Mint stays closed.</span></h1>
+    <p class="lead">Halaman owner untuk menyiapkan kontrak CraftMeetCode. Deployment dilakukan melalui Remix dan tetap membutuhkan approval wallet. Mint tidak dibuka otomatis; `freeOpen` dan `paidOpen` harus tetap <b>false</b> sampai owner menyetujui launch.</p>
+
+    <div class="grid">
+      <section class="card full">
+        <div class="step">01 / NETWORK & WALLET</div>
+        <h2>Pilih jaringan</h2>
+        <div class="field"><label for="network">Network</label><select id="network"><option value="97">BNB Smart Chain Testnet · 97</option><option value="56">BNB Smart Chain Mainnet · 56</option></select></div>
+        <div class="row"><button class="primary" id="connect2">Connect owner wallet</button><a class="button" href="https://remix.ethereum.org/#url=https://raw.githubusercontent.com/craftstack-io/craftstack/main/CraftMeetCode.sol" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">Open Remix deploy ↗</a></div>
+        <div class="status" id="walletStatus">Wallet belum terhubung.</div>
+      </section>
+
+      <section class="card">
+        <div class="step">02 / DEPLOY CONTRACT</div>
+        <h2>Constructor values</h2>
+        <div class="field"><label for="payout">payoutWallet_</label><input id="payout" placeholder="0x…" autocomplete="off"><p class="small">Wallet penerima pembayaran. Jangan masukkan private key.</p></div>
+        <div class="field"><label for="base">baseURI_</label><input id="base" placeholder="ipfs://METADATA_CID/" autocomplete="off"><p class="small">Harus berakhir dengan `/` dan tidak boleh placeholder.</p></div>
+        <p class="small">Deploy dilakukan manual di Remix agar owner dapat memeriksa dan menyetujui transaksi di wallet.</p>
+      </section>
+
+      <section class="card">
+        <div class="step">03 / CONTRACT STATUS</div>
+        <h2>Alamat kontrak</h2>
+        <div class="field"><label for="contract">contract address</label><input id="contract" placeholder="0x…" autocomplete="off"></div>
+        <button class="primary" id="load">Muat status</button>
+        <div class="check"><span>Owner</span><strong id="ownerCheck">—</strong></div>
+        <div class="check"><span>Free mint</span><strong id="freeCheck">—</strong></div>
+        <div class="check"><span>Paid mint</span><strong id="paidCheck">—</strong></div>
+        <div class="status" id="contractStatus">Masukkan alamat kontrak yang sudah diverifikasi.</div>
+      </section>
+
+      <section class="card full">
+        <div class="step">04 / MINT SAFETY GATE</div>
+        <h2>Approval owner diperlukan</h2>
+        <p class="small">Tombol di bawah hanya bekerja jika wallet terhubung adalah `owner()` kontrak. Memilih tindakan akan memunculkan konfirmasi tambahan dan popup approval wallet. Tidak ada mint yang dijalankan dari halaman ini.</p>
+        <div class="warning status">Jangan buka mint sebelum metadata, bytecode, payout wallet, dan testnet sudah diverifikasi.</div>
+        <div class="actions"><button id="closeMint">Tutup mint · setOpen(false, false)</button><button id="openFree" disabled>Buka free saja · owner approval</button><button id="openBoth" class="primary" disabled>Buka free + paid · owner approval</button></div>
+      </section>
+
+      <section class="card full"><div class="step">LOG</div><div class="log" id="log">› Halaman siap. Mint tetap tertutup sampai owner menyetujui transaksi setOpen.</div></section>
+    </div>
+  </main>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const abi = ["function owner() view returns (address)","function freeOpen() view returns (bool)","function paidOpen() view returns (bool)","function setOpen(bool free_, bool paid_)"];
+  let provider, signer, owner = "";
+  const zero = /^0x0{40}$/i;
+  const address = value => /^0x[a-fA-F0-9]{40}$/.test(value || "") && !zero.test(value || "");
+  function log(text){ $("log").textContent = `› ${text}\n` + $("log").textContent; }
+  function status(id, text, tone){ $(id).textContent = text; $(id).dataset.tone = tone || ""; }
+  function selectedChain(){ return Number($("network").value); }
+  function contract(){ return address($("contract").value) && provider ? new ethers.Contract($("contract").value, abi, provider) : null; }
+  async function connect(){
+    if (!window.ethereum) { status("walletStatus", "Wallet tidak terdeteksi. Buka di Binance Wallet, MetaMask, Trust, atau OKX.", "bad"); return; }
+    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    await provider.send("eth_requestAccounts", []);
+    const network = await provider.getNetwork();
+    signer = provider.getSigner();
+    owner = await signer.getAddress();
+    const correct = Number(network.chainId) === selectedChain();
+    $("payout").value = $("payout").value || owner;
+    status("walletStatus", `${owner}\nchainId ${network.chainId}${correct ? " · network sesuai" : ` · pilih chain ${selectedChain()}`}`, correct ? "good" : "warn");
+    log(`Wallet terhubung: ${owner}`);
+    await loadStatus();
+  }
+  async function loadStatus(){
+    if (!provider) { await connect(); return; }
+    const c = contract();
+    if (!c) { status("contractStatus", "Alamat kontrak belum valid.", "warn"); return; }
+    try {
+      const [contractOwner, free, paid] = await Promise.all([c.owner(), c.freeOpen(), c.paidOpen()]);
+      const isOwner = owner && contractOwner.toLowerCase() === owner.toLowerCase();
+      $("ownerCheck").textContent = isOwner ? "CONNECTED WALLET · MATCH" : `${contractOwner.slice(0, 8)}…${contractOwner.slice(-6)}`;
+      $("ownerCheck").className = isOwner ? "ok" : "";
+      $("freeCheck").textContent = free ? "OPEN" : "CLOSED";
+      $("freeCheck").className = free ? "" : "ok";
+      $("paidCheck").textContent = paid ? "OPEN" : "CLOSED";
+      $("paidCheck").className = paid ? "" : "ok";
+      $("openFree").disabled = !isOwner;
+      $("openBoth").disabled = !isOwner;
+      status("contractStatus", `Owner ${contractOwner}\nMint state: free=${free}, paid=${paid}${isOwner ? "\nOwner wallet cocok." : "\nWallet ini bukan owner."}`, isOwner ? "good" : "warn");
+      log(`Status loaded: free=${free}, paid=${paid}`);
+    } catch (error) { status("contractStatus", error.message || "Gagal membaca kontrak.", "bad"); log(`Gagal membaca kontrak: ${error.message}`); }
+  }
+  async function setOpen(free, paid){
+    const c = contract();
+    if (!c || !signer) return;
+    const label = `setOpen(${free}, ${paid})`;
+    if (!confirm(`Anda akan mengirim transaksi ${label}. Pastikan owner sudah menyetujui pembukaan mint.`)) return;
+    try { const tx = await c.connect(signer).setOpen(free, paid); log(`${label} dikirim: ${tx.hash}`); status("contractStatus", `Menunggu konfirmasi owner…\n${tx.hash}`, "warn"); await tx.wait(); log(`${label} berhasil dikonfirmasi.`); await loadStatus(); } catch (error) { log(`Approval dibatalkan/gagal: ${error.reason || error.message}`); }
+  }
+  $("connect").onclick = connect; $("connect2").onclick = connect; $("load").onclick = loadStatus;
+  $("closeMint").onclick = () => setOpen(false, false); $("openFree").onclick = () => setOpen(true, false); $("openBoth").onclick = () => setOpen(true, true);
+  $("network").onchange = () => { if (provider) connect(); };
+})();
+</script>
+</body>
+</html>

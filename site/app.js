@@ -6,7 +6,8 @@
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const zeroAddress = /^0x0{40}$/i;
   const validAddress = value => /^0x[a-fA-F0-9]{40}$/.test(value || "") && !zeroAddress.test(value || "");
-  const contractReady = Boolean(config.mintEnabled && validAddress(config.contractAddress) && validAddress(config.ownerAddress) && [56, 97].includes(Number(config.chainId)) && config.rpcUrl);
+  const collectionReady = Boolean(validAddress(config.contractAddress) && [56, 97].includes(Number(config.chainId)) && config.rpcUrl);
+  const contractReady = Boolean(config.mintEnabled && collectionReady && validAddress(config.ownerAddress));
   const tokenIds = [1, 7, 42, 88, 101, 256, 314, 500, 777, 1024, 1337, 2048, 3141, 4096, 5000, 7777, 8888, 10000];
   const abi = [
     "function freeMint() payable",
@@ -16,7 +17,8 @@
     "function freeOpen() view returns (bool)",
     "function paidOpen() view returns (bool)",
     "function payoutWallet() view returns (address)",
-    "event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)"
+    "event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)",
+    "function balanceOf(address owner) view returns (uint256)"
   ];
 
   const menuButton = $("#menuToggle");
@@ -120,6 +122,116 @@
     draw(heroCanvas, heroId);
     heroCanvas.setAttribute("aria-label", `Sample pixel-art robot from the CraftMeetCode collection, collectible ${heroId}`);
   }
+
+  const agentState = { address: "", signature: "", message: "", tokenBalance: 0, history: [] };
+  const agentContractReady = Boolean(collectionReady && config.agentEnabled);
+  const agentAbi = ["function balanceOf(address owner) view returns (uint256)"];
+
+  function setAgentStatus(message, tone = "muted") {
+    const status = $("#agentAccessStatus");
+    if (!status) return;
+    status.textContent = message;
+    status.dataset.tone = tone;
+  }
+
+  function shortAddress(address) {
+    return address ? `${address.slice(0, 6)}…${address.slice(-4)}` : "";
+  }
+
+  function renderAgentLock(locked) {
+    $("#agentChat")?.classList.toggle("is-locked", locked);
+    $("#agentChatInput")?.toggleAttribute("disabled", locked);
+    $("#agentSendButton")?.toggleAttribute("disabled", locked);
+    $("#agentTalkButton")?.toggleAttribute("disabled", locked);
+  }
+
+  function appendAgentMessage(role, text) {
+    const log = $("#agentMessages");
+    if (!log) return;
+    const item = document.createElement("div");
+    item.className = `agent-message agent-message-${role}`;
+    item.innerHTML = `<span class="agent-message-label">${role === "user" ? "YOU" : "BOT"}</span>`;
+    const body = document.createElement("p");
+    body.textContent = text;
+    item.append(body);
+    log.append(item);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function verifyAgentOwnership() {
+    if (!window.ethereum || !window.ethers?.providers?.Web3Provider) throw new Error("Wallet browser tidak ditemukan.");
+    if (!collectionReady) throw new Error("Kontrak koleksi belum live; ownership belum dapat diverifikasi.");
+    const provider = new window.ethers.providers.Web3Provider(window.ethereum, "any");
+    await provider.send("eth_requestAccounts", []);
+    const network = await provider.getNetwork();
+    if (Number(network.chainId) !== Number(config.chainId)) throw new Error(`Hubungkan wallet ke chain ID ${config.chainId}.`);
+    const address = await provider.getSigner().getAddress();
+    const contract = new window.ethers.Contract(config.contractAddress, agentAbi, provider);
+    const balance = await contract.balanceOf(address);
+    if (balance.isZero()) throw new Error("Wallet ini belum memiliki CraftMeetCode NFT.");
+    const nonce = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const message = `${config.collectionName || "CraftMeetCode"} agent access\nWallet: ${address}\nNonce: ${nonce}\n\nSigning only verifies ownership. No transaction will be sent.`;
+    setAgentStatus("Silakan tanda tangani pesan verifikasi di wallet. Tidak ada transaksi atau gas.", "active");
+    const signature = await provider.getSigner().signMessage(message);
+    agentState.address = address;
+    agentState.signature = signature;
+    agentState.message = message;
+    agentState.tokenBalance = balance.toString();
+    $("#agentWalletButton").textContent = shortAddress(address);
+    $("#agentTokenCount").textContent = `${balance.toString()} NFT terdeteksi`;
+    $("#agentChat")?.classList.remove("is-locked");
+    renderAgentLock(false);
+    setAgentStatus("ACCESS GRANTED · ownership terverifikasi", "success");
+    appendAgentMessage("bot", `Akses terbuka. Saya ${config.agentName || "The Workshop Bot"}. Ceritakan apa yang ingin kamu bangun.`);
+  }
+
+  async function sendAgentMessage() {
+    const input = $("#agentChatInput");
+    const text = input?.value.trim();
+    if (!text || !agentState.signature) return;
+    appendAgentMessage("user", text);
+    input.value = "";
+    if (!config.agentEndpoint) {
+      appendAgentMessage("bot", "Endpoint agent belum dikonfigurasi. Ownership dan signature sudah siap; hubungkan backend agent melalui CMC_CONFIG.agentEndpoint.");
+      return;
+    }
+    const button = $("#agentSendButton");
+    if (button) button.disabled = true;
+    try {
+      const response = await fetch(config.agentEndpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address: agentState.address, signature: agentState.signature, message: agentState.message, tokenBalance: agentState.tokenBalance, text, history: agentState.history }) });
+      if (!response.ok) throw new Error(`Agent service returned ${response.status}`);
+      const data = await response.json();
+      const reply = String(data.reply || data.message || "Agent tidak mengembalikan jawaban.");
+      agentState.history.push({ role: "user", content: text }, { role: "assistant", content: reply });
+      appendAgentMessage("bot", reply);
+      if (data.speak && "speechSynthesis" in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(reply));
+    } catch (error) {
+      appendAgentMessage("bot", `Agent belum dapat dihubungi: ${error.message}`);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  function startAgentSpeech() {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) { setAgentStatus("Speech-to-text tidak tersedia di browser ini.", "error"); return; }
+    const recognition = new Recognition();
+    recognition.lang = "id-ID";
+    recognition.interimResults = false;
+    setAgentStatus("Mendengarkan…", "active");
+    recognition.onresult = event => { const input = $("#agentChatInput"); if (input) input.value = event.results[0][0].transcript; setAgentStatus("Transkrip siap dikirim.", "success"); };
+    recognition.onerror = () => setAgentStatus("Mikrofon tidak dapat digunakan. Coba ketik pesan.", "error");
+    recognition.start();
+  }
+
+  $("#agentWalletButton")?.addEventListener("click", async () => {
+    try { await verifyAgentOwnership(); } catch (error) { setAgentStatus(error.message, "error"); }
+  });
+  $("#agentSendButton")?.addEventListener("click", sendAgentMessage);
+  $("#agentChatInput")?.addEventListener("keydown", event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendAgentMessage(); } });
+  $("#agentTalkButton")?.addEventListener("click", startAgentSpeech);
+  renderAgentLock(true);
+  if (!agentContractReady) setAgentStatus("LOCKED · menunggu kontrak NFT terverifikasi", "muted");
 
   const freeButton = $("#freeMintButton");
   const paidButton = $("#paidMintButton");
