@@ -12,8 +12,10 @@ The source remains available for review in [`CraftMeetCode.sol`](CraftMeetCode.s
 
 `CraftMeetCode` has two constructor parameters:
 
-1. `payoutWallet_`: the wallet that receives mint payments. Use the verified owner/payout wallet. Do not paste a seed phrase or private key anywhere.
+1. `payoutWallet_`: the wallet that receives paid-mint payments. Use the verified owner/payout wallet. Do not paste a seed phrase or private key anywhere.
 2. `baseURI_`: use `https://craftmeetscode.net/assets/metadata/`. Each token metadata file is available as `https://craftmeetscode.net/assets/metadata/<tokenId>.json`, and its image points to `https://craftmeetscode.net/assets/images/<tokenId>.png`.
+
+The replacement contract currently embedded in this deploy console sets the free-mint price to `0 BNB`; minters still pay the network gas. The paid mint remains `0.001 BNB`. This deployment creates a new contract address and does not modify the old contract.
 
 Compile with Solidity `0.8.20` and the OpenZeppelin dependencies available to Remix. Halaman deploy memilih BNB Smart Chain Mainnet (`chainId 56`) sebagai default. Pastikan bytecode, metadata, payout wallet, dan biaya gas sudah diverifikasi sebelum menekan Confirm. BNB Testnet (`chainId 97`) tetap tersedia sebagai pilihan uji.
 

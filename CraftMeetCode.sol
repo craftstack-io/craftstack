@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * craftmeetcode — 10,000 pixel works
- *  - 5,000 FREE mint  : bayar fee 0.0001 BNB (langsung diteruskan ke wallet payout kamu)
+ *  - 5,000 FREE mint  : 0 BNB (pengguna tetap membayar gas jaringan)
  *  - 5,000 PAID mint  : 0.001 BNB            (langsung diteruskan ke wallet payout kamu)
  *  - Token ID 1-10000 dibagikan ACAK (tidak berurutan) saat mint.
  */
@@ -19,7 +19,7 @@ contract CraftMeetCode is ERC721, Ownable, ReentrancyGuard {
     uint256 public constant FREE_SUPPLY = 5000;
     uint256 public constant PAID_SUPPLY = 5000;
 
-    uint256 public freeFee   = 0.0001 ether;
+    uint256 public freeFee   = 0 ether;
     uint256 public paidPrice = 0.001 ether;
 
     uint256 public freeMinted;

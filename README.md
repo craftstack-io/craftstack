@@ -8,6 +8,8 @@ The site can be hosted as static files without a backend. GitHub Pages serves th
 
 The NFT contract is deployed on BNB Mainnet at `0x49123D2D219542DE882619180Af86Fc78c7C0c8E`. Minting and agent access remain intentionally disabled in `site/config.js` (`mintEnabled: false`, `agentEnabled: false`). **Do not enable either feature until the owner approves the launch and the agent backend is verified.**
 
+The current deployed contract charges `0.0001 BNB` for the free phase. A replacement contract with a `0 BNB` free phase (gas is still paid by the minter) has been compiled and embedded in the owner deploy console, but it has not been deployed yet. Do not update the frontend contract address until the owner approves and confirms the replacement deployment.
+
 ## NFT-gated agent MVP
 
 The frontend now includes an NFT-gated agent console. A visitor can connect a wallet, the site reads ERC-721 `balanceOf` over the configured RPC, and the owner signs a human-readable message. Signing does not submit a transaction and does not spend gas. The chat stays locked while the collection contract is unavailable or the wallet owns no NFT.
