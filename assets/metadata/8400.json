@@ -1,7 +1,7 @@
 {
   "name": "craftmeetcode #8400",
   "description": "craftmeetcode: 10,000 pixel craftsman-bots forged where craft meets code. 5,000 free mint, 5,000 paid mint on BNB Chain.",
-  "image": "ipfs://REPLACE_WITH_IMAGES_CID/8400.png",
+  "image": "https://craftmeetscode.net/assets/images/8400.png",
   "attributes": [
     {
       "trait_type": "Body",

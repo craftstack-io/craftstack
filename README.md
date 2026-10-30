@@ -19,7 +19,7 @@ The console includes browser speech-to-text when supported and optional browser 
 ## Before enabling minting
 
 1. Test `CraftMeetCode.sol` on BNB Testnet and complete a security audit before accepting mainnet payments.
-2. Upload `assets/images/` to IPFS, regenerate the metadata with the correct image CID, and upload the metadata. The current metadata still contains `REPLACE_WITH_IMAGES_CID` and is not ready for use by the contract.
+2. The metadata currently uses the website-hosted image URLs `https://craftmeetscode.net/assets/images/<tokenId>.png`. The matching metadata base URI for this non-IPFS deployment is `https://craftmeetscode.net/assets/metadata/`.
 3. Deploy the contract with verified `payoutWallet_` and `baseURI_` values; verify the contract address and bytecode using the network explorer.
 4. Set the contract address, payout wallet, chain ID, RPC endpoint, and prices in `site/config.js` to match the deployed contract. Set `mintEnabled` to `true` only after verifying the address and on-chain state. Never put a private key or seed phrase in frontend code.
 5. Confirm that each mint phase is opened on-chain before enabling its button, and test the entire flow on testnet before announcing a mainnet launch.
