@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/agent.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}

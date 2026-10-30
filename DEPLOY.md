@@ -42,3 +42,7 @@ The website also keeps mint disabled until `site/config.js` is updated with the 
 5. Only after a separate launch approval should the owner call `setOpen(true, false)` or `setOpen(true, true)` from the owner wallet.
 
 Never share a seed phrase or private key. A deployment link cannot approve transactions on behalf of the owner wallet.
+
+## Agent backend
+
+The frontend agent remains disabled until its backend is deployed. `api/agent.js` is a Node 18 serverless reference endpoint. Configure `OPENAI_API_KEY`, `CMC_CONTRACT_ADDRESS=0x49123D2D219542DE882619180Af86Fc78c7C0c8E`, `CMC_RPC_URL=https://bsc-dataseed.binance.org`, and `CMC_ALLOWED_ORIGIN=https://craftmeetscode.net` on the backend host. The endpoint verifies the wallet signature, checks the nonce age, reads `balanceOf` on BNB Mainnet, and only then calls the AI provider. After testing, set the HTTPS endpoint in `site/config.js` and enable `agentEnabled`; never put the AI key in that file.

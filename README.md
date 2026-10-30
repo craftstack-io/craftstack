@@ -16,6 +16,8 @@ After deployment, set `agentEnabled: true`, the verified `contractAddress`, and 
 
 The console includes browser speech-to-text when supported and optional browser text-to-speech when the endpoint returns `{ speak: true }`. Audio is not stored by this frontend. Production deployment should still define retention, moderation, rate limits, and abuse controls on the backend.
 
+The repository now includes a serverless reference endpoint at `api/agent.js`. Deploy it on a Node 18 serverless host, set `OPENAI_API_KEY`, `OPENAI_MODEL` (optional), `CMC_CONTRACT_ADDRESS`, `CMC_RPC_URL`, and `CMC_ALLOWED_ORIGIN`, then set the resulting HTTPS URL as `agentEndpoint` and set `agentEnabled: true` only after testing. The endpoint verifies the signed message, rejects stale nonces, checks `balanceOf` on BNB Mainnet, and only then calls the AI provider. GitHub Pages does not run this endpoint by itself.
+
 ## Before enabling minting
 
 1. Test `CraftMeetCode.sol` on BNB Testnet and complete a security audit before accepting mainnet payments.

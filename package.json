@@ -1,0 +1,11 @@
+{
+  "name": "craftmeetcode-agent-service",
+  "private": true,
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ethers": "5.7.2"
+  }
+}
