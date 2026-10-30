@@ -21,6 +21,54 @@
     "function balanceOf(address owner) view returns (uint256)"
   ];
 
+  const mintQuantities = { free: 1, paid: 1 };
+  const maxQuantities = { free: 3, paid: 10 };
+  const mintPrices = { free: "0", paid: "0.001" };
+  let mintWalletAddress = "";
+
+  function shortWallet(address) { return address ? `${address.slice(0, 6)}…${address.slice(-4)}` : ""; }
+  function updateMintTotals() {
+    ["free", "paid"].forEach(kind => {
+      const quantity = mintQuantities[kind];
+      const quantityNode = $(`#${kind}Quantity`);
+      const totalNode = $(`#${kind}Total`);
+      if (quantityNode) quantityNode.value = String(quantity);
+      if (totalNode) totalNode.textContent = kind === "free" ? "0 BNB + gas" : `${(Number(mintPrices[kind]) * quantity).toFixed(3)} BNB + gas`;
+    });
+  }
+  function promptText(kind) {
+    const quantity = mintQuantities[kind];
+    const price = kind === "free" ? "0 BNB" : `${(Number(mintPrices[kind]) * quantity).toFixed(3)} BNB`;
+    const method = kind === "free" ? "freeMint()" : "paidMint()";
+    return `Mint ${quantity} CraftMeetCode NFT${quantity > 1 ? "s" : ""} (${kind} mint) on BNB Smart Chain (chain ID 56).\nContract: ${config.contractAddress}\nPayout wallet: ${config.ownerAddress}\nMy wallet: ${mintWalletAddress || "[PASTE YOUR WALLET ADDRESS]"}\nA Binance Agent ID can be used when it controls an EVM wallet.\nCall ${method} once per NFT with a total value of ${price}. Show the transaction details first and wait for my approval in the wallet. Never ask for my seed phrase or private key.`;
+  }
+  function updatePrompts() {
+    const walletInput = $("#promptWallet");
+    if (walletInput && mintWalletAddress && !walletInput.value) walletInput.value = mintWalletAddress;
+    const freePrompt = $("#freePrompt"); const paidPrompt = $("#paidPrompt");
+    if (freePrompt) freePrompt.value = promptText("free");
+    if (paidPrompt) paidPrompt.value = promptText("paid");
+  }
+  async function connectMintWallet() {
+    if (!window.ethereum || !window.ethers?.providers?.Web3Provider) {
+      if (statusDetail) statusDetail.textContent = "Wallet browser tidak ditemukan. Buka situs dengan Binance Web3 Wallet, MetaMask, Trust Wallet, atau OKX Wallet.";
+      return;
+    }
+    try {
+      const provider = new window.ethers.providers.Web3Provider(window.ethereum, "any");
+      await provider.send("eth_requestAccounts", []);
+      const network = await provider.getNetwork();
+      if (Number(network.chainId) !== Number(config.chainId)) throw new Error("Hubungkan wallet ke BNB Smart Chain (chain ID 56)." );
+      mintWalletAddress = await provider.getSigner().getAddress();
+      const status = $("#mintWalletStatus");
+      if (status) status.textContent = `${shortWallet(mintWalletAddress)} · BNB Chain · wallet terhubung`;
+      const input = $("#promptWallet"); if (input) input.value = mintWalletAddress;
+      updatePrompts();
+    } catch (error) {
+      if (statusDetail) statusDetail.textContent = `Wallet belum terhubung: ${error?.message || "permintaan dibatalkan"}`;
+    }
+  }
+
   const menuButton = $("#menuToggle");
   const nav = $("#siteNav");
   menuButton?.addEventListener("click", () => {
@@ -298,7 +346,7 @@
   async function connectAndMint(kind) {
     if (!onChainReady || !contractReady) return;
     if (!window.ethereum || !window.ethers?.providers?.Web3Provider) {
-      if (statusDetail) statusDetail.textContent = "No wallet was found or ethers.js is unavailable. No transaction was submitted.";
+      if (statusDetail) statusDetail.textContent = "Wallet browser tidak ditemukan atau ethers.js tidak tersedia.";
       return;
     }
     const button = kind === "free" ? freeButton : paidButton;
@@ -307,36 +355,51 @@
       const provider = new window.ethers.providers.Web3Provider(window.ethereum, "any");
       await provider.send("eth_requestAccounts", []);
       const chainHex = `0x${Number(config.chainId).toString(16)}`;
-      try {
-        await provider.send("wallet_switchEthereumChain", [{ chainId: chainHex }]);
-      } catch (error) {
+      try { await provider.send("wallet_switchEthereumChain", [{ chainId: chainHex }]); }
+      catch (error) {
         if (error?.code !== 4902) throw error;
-        await provider.send("wallet_addEthereumChain", [{
-          chainId: chainHex,
-          chainName: "BNB Smart Chain",
-          nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
-          rpcUrls: [config.rpcUrl],
-          blockExplorerUrls: ["https://bscscan.com"]
-        }]);
+        await provider.send("wallet_addEthereumChain", [{ chainId: chainHex, chainName: "BNB Smart Chain", nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 }, rpcUrls: [config.rpcUrl], blockExplorerUrls: ["https://bscscan.com"] }]);
       }
       const selectedNetwork = await provider.getNetwork();
-      if (Number(selectedNetwork.chainId) !== Number(config.chainId)) throw new Error("The wallet is still connected to the wrong network.");
+      if (Number(selectedNetwork.chainId) !== Number(config.chainId)) throw new Error("Wallet masih berada di jaringan yang salah.");
       const signer = provider.getSigner();
+      mintWalletAddress = await signer.getAddress();
       const contract = new window.ethers.Contract(config.contractAddress, abi, signer);
-      const price = kind === "free" ? config.freeFee : config.paidPrice;
-      if (statusDetail) statusDetail.textContent = "Review the contract name, amount, network, and gas fee in your wallet before approving.";
-      const tx = await (kind === "free" ? contract.freeMint({ value: window.ethers.utils.parseEther(price) }) : contract.paidMint({ value: window.ethers.utils.parseEther(price) }));
-      if (statusDetail) statusDetail.textContent = "Transaction submitted. Waiting for network confirmation…";
-      await tx.wait();
-      if (statusDetail) statusDetail.textContent = `Mint successful. Transaction hash: ${tx.hash}`;
+      const quantity = mintQuantities[kind];
+      for (let i = 0; i < quantity; i += 1) {
+        if (statusDetail) statusDetail.textContent = `Mint ${i + 1}/${quantity}: tinjau jumlah, jaringan, dan gas di wallet.`;
+        const price = window.ethers.utils.parseEther(mintPrices[kind]);
+        const tx = await (kind === "free" ? contract.freeMint({ value: price }) : contract.paidMint({ value: price }));
+        if (statusDetail) statusDetail.textContent = `Transaksi ${i + 1}/${quantity} dikirim. Menunggu konfirmasi…`;
+        await tx.wait();
+      }
+      if (statusDetail) statusDetail.textContent = `${quantity} NFT berhasil di-mint. Cek wallet dan BscScan untuk detail transaksi.`;
+      updatePrompts();
       await loadStats();
     } catch (error) {
-      const message = error?.reason || error?.data?.message || error?.message || "Mint request failed.";
-      if (statusDetail) statusDetail.textContent = `Mint failed: ${message}`;
+      const message = error?.reason || error?.data?.message || error?.message || "Mint gagal.";
+      if (statusDetail) statusDetail.textContent = `Mint gagal: ${message}`;
     } finally {
       if (button) button.disabled = false;
     }
   }
+
+
+  $("#mintWalletButton")?.addEventListener("click", connectMintWallet);
+  $$('[data-quantity-action]').forEach(control => control.addEventListener("click", () => {
+    const kind = control.dataset.kind;
+    const delta = control.dataset.quantityAction === "increase" ? 1 : -1;
+    mintQuantities[kind] = Math.max(1, Math.min(maxQuantities[kind], mintQuantities[kind] + delta));
+    updateMintTotals(); updatePrompts();
+  }));
+  $("#promptWallet")?.addEventListener("input", event => { mintWalletAddress = event.target.value.trim(); updatePrompts(); });
+  $$('[data-copy-prompt]').forEach(button => button.addEventListener("click", async () => {
+    const field = button.dataset.copyPrompt === "free" ? $("#freePrompt") : $("#paidPrompt");
+    if (!field) return;
+    await navigator.clipboard.writeText(field.value);
+    button.textContent = "Copied"; setTimeout(() => { button.textContent = "Copy"; }, 1200);
+  }));
+  updateMintTotals(); updatePrompts();
 
   if (freeButton) {
     freeButton.disabled = true;
