@@ -288,6 +288,17 @@
 
   let onChainReady = false;
 
+  function createReadProvider() {
+    const urls = [...new Set(config.rpcUrls || [config.rpcUrl])].filter(Boolean);
+    const entries = urls.map((url, index) => ({
+      provider: new window.ethers.providers.JsonRpcProvider(url, Number(config.chainId)),
+      priority: index + 1,
+      weight: 1,
+      stallTimeout: 1800
+    }));
+    return entries.length > 1 ? new window.ethers.providers.FallbackProvider(entries, 1) : entries[0].provider;
+  }
+
   async function loadStats() {
     if (!collectionReady) return;
     onChainReady = false;
@@ -296,11 +307,11 @@
     if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
     if (statusDetail) statusDetail.textContent = "Verifying the chain, contract address, payout wallet, and mint status…";
     if (!window.ethers?.providers?.JsonRpcProvider) {
-      if (statusDetail) statusDetail.textContent = "The contract reader is unavailable. Minting remains disabled.";
+      if (statusDetail) statusDetail.textContent = "Pembaca kontrak tidak tersedia. Coba refresh atau periksa koneksi internet wallet.";
       return;
     }
     try {
-      const provider = new window.ethers.providers.JsonRpcProvider(config.rpcUrl);
+      const provider = createReadProvider();
       const network = await provider.getNetwork();
       if (Number(network.chainId) !== Number(config.chainId)) throw new Error("The RPC points to a different network than the configured chain ID.");
       const code = await provider.getCode(config.contractAddress);
@@ -339,7 +350,7 @@
       if (freeButton) freeButton.disabled = true;
       if (paidButton) paidButton.disabled = true;
       if (statusTitle) statusTitle.textContent = "CONTRACT NOT VERIFIED";
-      if (statusDetail) statusDetail.textContent = `Minting remains disabled: ${error?.message || "on-chain verification failed"}`;
+      if (statusDetail) statusDetail.textContent = `Status kontrak belum dapat dibaca: ${error?.message || "on-chain verification failed"}`;
     }
   }
 

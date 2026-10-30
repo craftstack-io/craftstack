@@ -13,6 +13,12 @@ window.CMC_CONFIG = Object.freeze({
   freeSupply: 5000,
   paidSupply: 5000,
   rpcUrl: "https://bsc-dataseed.binance.org",
+  rpcUrls: [
+    "https://bsc-dataseed.binance.org",
+    "https://bsc-dataseed.bnbchain.org",
+    "https://bsc-dataseed1.binance.org",
+    "https://bsc-dataseed2.binance.org"
+  ],
   // Set these only after deployment and backend verification.
   agentEnabled: false,
   agentEndpoint: "",
