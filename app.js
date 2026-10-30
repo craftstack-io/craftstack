@@ -7,7 +7,7 @@
   const zeroAddress = /^0x0{40}$/i;
   const validAddress = value => /^0x[a-fA-F0-9]{40}$/.test(value || "") && !zeroAddress.test(value || "");
   const collectionReady = Boolean(validAddress(config.contractAddress) && [56, 97].includes(Number(config.chainId)) && config.rpcUrl);
-  const contractReady = Boolean(config.mintEnabled && collectionReady && validAddress(config.ownerAddress));
+  const siteMintEnabled = config.mintEnabled === true && collectionReady && validAddress(config.ownerAddress);
   const tokenIds = [1, 7, 42, 88, 101, 256, 314, 500, 777, 1024, 1337, 2048, 3141, 4096, 5000, 7777, 8888, 10000];
   const abi = [
     "function freeMint() payable",
@@ -17,6 +17,12 @@
     "function freeOpen() view returns (bool)",
     "function paidOpen() view returns (bool)",
     "function payoutWallet() view returns (address)",
+    "function owner() view returns (address)",
+    "function MAX_SUPPLY() view returns (uint256)",
+    "function FREE_SUPPLY() view returns (uint256)",
+    "function PAID_SUPPLY() view returns (uint256)",
+    "function freeFee() view returns (uint256)",
+    "function paidPrice() view returns (uint256)",
     "event Transfer(address indexed from,address indexed to,uint256 indexed tokenId)",
     "function balanceOf(address owner) view returns (uint256)"
   ];
@@ -241,13 +247,14 @@
   let onChainReady = false;
 
   async function loadStats() {
-    if (!contractReady) return;
+    if (!collectionReady) return;
     onChainReady = false;
     if (freeButton) freeButton.disabled = true;
     if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
-    if (statusDetail) statusDetail.textContent = "Verifying the chain, contract address, payout wallet, and mint status…";
+    if (statusTitle) statusTitle.textContent = "CHECKING ON-CHAIN STATUS";
+    if (statusDetail) statusDetail.textContent = "Checking the chain, contract, owner, payout wallet, prices, supply, and mint phases. Mint buttons remain disabled during verification.";
     if (!window.ethers?.providers?.JsonRpcProvider) {
+      if (statusTitle) statusTitle.textContent = "ON-CHAIN CHECK UNAVAILABLE";
       if (statusDetail) statusDetail.textContent = "The contract reader is unavailable. Minting remains disabled.";
       return;
     }
@@ -258,43 +265,60 @@
       const code = await provider.getCode(config.contractAddress);
       if (!code || code === "0x") throw new Error("No contract bytecode was found at that address.");
       const contract = new window.ethers.Contract(config.contractAddress, abi, provider);
-      const [free, paid, freeOpen, paidOpen, payoutWallet] = await Promise.all([
-        contract.freeMinted(), contract.paidMinted(), contract.freeOpen(), contract.paidOpen(), contract.payoutWallet()
+      const [free, paid, freeOpen, paidOpen, payoutWallet, owner, freeFee, paidPrice, maxSupply, freeSupply, paidSupply] = await Promise.all([
+        contract.freeMinted(), contract.paidMinted(), contract.freeOpen(), contract.paidOpen(), contract.payoutWallet(), contract.owner(),
+        contract.freeFee(), contract.paidPrice(), contract.MAX_SUPPLY(), contract.FREE_SUPPLY(), contract.PAID_SUPPLY()
       ]);
+      if (!validAddress(config.ownerAddress)) throw new Error("The site ownerAddress is invalid.");
+      if (String(owner).toLowerCase() !== String(config.ownerAddress).toLowerCase()) throw new Error("The on-chain owner does not match the site’s configured ownerAddress.");
       if (String(payoutWallet).toLowerCase() !== String(config.ownerAddress).toLowerCase()) throw new Error("The on-chain payout wallet does not match the site’s configured ownerAddress.");
+      const expectedFreeSupply = Number(config.freeSupply);
+      const expectedPaidSupply = Number(config.paidSupply);
+      if (maxSupply.toNumber() !== expectedFreeSupply + expectedPaidSupply || freeSupply.toNumber() !== expectedFreeSupply || paidSupply.toNumber() !== expectedPaidSupply) {
+        throw new Error("The on-chain supply does not match the site configuration.");
+      }
+      if (!freeFee.eq(window.ethers.utils.parseEther(String(config.freeFee))) || !paidPrice.eq(window.ethers.utils.parseEther(String(config.paidPrice)))) {
+        throw new Error("The on-chain mint prices do not match the site configuration.");
+      }
       const freeCount = free.toNumber();
       const paidCount = paid.toNumber();
-      $("#freeCount").textContent = `${freeCount.toLocaleString("en-US")} / 5.000 minted`;
-      $("#paidCount").textContent = `${paidCount.toLocaleString("en-US")} / 5.000 minted`;
+      $("#freeCount").textContent = `${freeCount.toLocaleString("en-US")} / ${expectedFreeSupply.toLocaleString("en-US")} minted`;
+      $("#paidCount").textContent = `${paidCount.toLocaleString("en-US")} / ${expectedPaidSupply.toLocaleString("en-US")} minted`;
       const freeTrack = freeButton?.closest(".mint-card")?.querySelector(".progress-track span");
       const paidTrack = paidButton?.closest(".mint-card")?.querySelector(".progress-track span");
-      if (freeTrack) freeTrack.style.width = `${Math.min(100, freeCount / config.freeSupply * 100)}%`;
-      if (paidTrack) paidTrack.style.width = `${Math.min(100, paidCount / config.paidSupply * 100)}%`;
+      if (freeTrack) freeTrack.style.width = `${Math.min(100, freeCount / expectedFreeSupply * 100)}%`;
+      if (paidTrack) paidTrack.style.width = `${Math.min(100, paidCount / expectedPaidSupply * 100)}%`;
       onChainReady = true;
+      const freeCanMint = siteMintEnabled && freeOpen && freeCount < expectedFreeSupply;
+      const paidCanMint = siteMintEnabled && paidOpen && paidCount < expectedPaidSupply;
       if (freeButton) {
-        freeButton.disabled = !freeOpen;
-        freeButton.textContent = freeOpen ? "Connect & mint" : "Phase closed";
-        freeButton.classList.toggle("button-disabled", !freeOpen);
+        freeButton.disabled = !freeCanMint;
+        freeButton.textContent = freeCount >= expectedFreeSupply ? "Sold out" : !siteMintEnabled ? "Mint disabled" : freeOpen ? "Connect & mint" : "Phase closed";
+        freeButton.classList.toggle("button-disabled", !freeCanMint);
       }
       if (paidButton) {
-        paidButton.disabled = !paidOpen;
-        paidButton.textContent = paidOpen ? "Connect & mint" : "Phase closed";
-        paidButton.classList.toggle("button-disabled", !paidOpen);
+        paidButton.disabled = !paidCanMint;
+        paidButton.textContent = paidCount >= expectedPaidSupply ? "Sold out" : !siteMintEnabled ? "Mint disabled" : paidOpen ? "Connect & mint" : "Phase closed";
+        paidButton.classList.toggle("button-disabled", !paidCanMint);
       }
       const mintOpen = Boolean(freeOpen || paidOpen);
-      if (statusTitle) statusTitle.textContent = mintOpen ? "CONTRACT VERIFIED · MINT OPEN" : "CONTRACT VERIFIED · MINT CLOSED";
-      if (statusDetail) statusDetail.textContent = mintOpen ? "On-chain verification passed. Review the network and transaction details in your wallet before approving." : "The address, network, and payout wallet match; the contract owner has not opened the mint phase yet.";
+      if (statusTitle) statusTitle.textContent = !siteMintEnabled ? (mintOpen ? "ON-CHAIN MINT OPEN · WEBSITE DISABLED" : "ON-CHAIN CHECK PASSED · MINT DISABLED") : (mintOpen ? "ON-CHAIN CHECK PASSED · MINT OPEN" : "ON-CHAIN CHECK PASSED · MINT CLOSED");
+      if (statusDetail) {
+        statusDetail.textContent = !siteMintEnabled
+          ? (mintOpen ? "Read-only checks passed, but mintEnabled is false in the site configuration. The mint buttons will stay disabled." : "Read-only checks passed. Both phases are closed on-chain, and mintEnabled is false in the site configuration.")
+          : (mintOpen ? "On-chain checks passed. Review the contract, amount, network, and gas in your wallet before approving." : "On-chain checks passed, but the contract owner has not opened either mint phase.");
+      }
     } catch (error) {
       onChainReady = false;
       if (freeButton) freeButton.disabled = true;
       if (paidButton) paidButton.disabled = true;
-      if (statusTitle) statusTitle.textContent = "CONTRACT NOT VERIFIED";
+      if (statusTitle) statusTitle.textContent = "ON-CHAIN CHECK FAILED";
       if (statusDetail) statusDetail.textContent = `Minting remains disabled: ${error?.message || "on-chain verification failed"}`;
     }
   }
 
   async function connectAndMint(kind) {
-    if (!onChainReady) return;
+    if (!siteMintEnabled || !onChainReady) return;
     if (!window.ethereum || !window.ethers?.providers?.Web3Provider) {
       if (statusDetail) statusDetail.textContent = "No wallet was found or ethers.js is unavailable. No transaction was submitted.";
       return;
@@ -336,26 +360,20 @@
     }
   }
 
-  if (!contractReady) {
-    if (freeButton) freeButton.disabled = true;
-    if (paidButton) paidButton.disabled = true;
-    if (statusTitle) statusTitle.textContent = collectionReady ? "CONTRACT VERIFIED · MINT CLOSED" : "CONTRACT NOT LIVE";
-    if (statusDetail) statusDetail.textContent = collectionReady ? "The contract is deployed and verified, but minting remains disabled until the owner approves it. This page will not submit any transactions." : "Minting is not available yet. This page will not submit any transactions.";
-  } else {
-    if (freeButton) {
-      freeButton.disabled = false;
-      freeButton.classList.remove("button-disabled");
-      freeButton.textContent = "Connect & mint";
-      freeButton.addEventListener("click", () => connectAndMint("free"));
-    }
-    if (paidButton) {
-      paidButton.disabled = false;
-      paidButton.classList.remove("button-disabled");
-      paidButton.textContent = "Connect & mint";
-      paidButton.addEventListener("click", () => connectAndMint("paid"));
-    }
-    if (statusTitle) statusTitle.textContent = "VERIFYING CONTRACT";
-    if (statusDetail) statusDetail.textContent = `Verifying the contract on chain ID ${config.chainId} before enabling minting.`;
+  if (freeButton) freeButton.disabled = true;
+  if (paidButton) paidButton.disabled = true;
+  if (siteMintEnabled) {
+    freeButton?.addEventListener("click", () => connectAndMint("free"));
+    paidButton?.addEventListener("click", () => connectAndMint("paid"));
+  }
+  if (collectionReady) {
+    if (statusTitle) statusTitle.textContent = siteMintEnabled ? "VERIFYING CONTRACT" : "CHECKING ON-CHAIN STATUS · MINT DISABLED";
+    if (statusDetail) statusDetail.textContent = siteMintEnabled
+      ? `Checking the contract on chain ID ${config.chainId} before enabling minting.`
+      : "The site mint setting is disabled. The contract will be checked read-only; no mint transaction can be submitted.";
     loadStats();
+  } else {
+    if (statusTitle) statusTitle.textContent = "CONTRACT NOT CONFIGURED";
+    if (statusDetail) statusDetail.textContent = "Minting remains disabled because the contract address, chain ID, or RPC configuration is invalid.";
   }
 })();
