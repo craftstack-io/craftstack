@@ -73,17 +73,32 @@
   function status(id, text, tone){ $(id).textContent = text; $(id).dataset.tone = tone || ""; }
   function selectedChain(){ return Number($("network").value); }
   function contract(){ return address($("contract").value) && provider ? new ethers.Contract($("contract").value, abi, provider) : null; }
+  async function switchToSelectedNetwork(){
+    const chainId = selectedChain();
+    const chainHex = `0x${chainId.toString(16)}`;
+    try {
+      await provider.send("wallet_switchEthereumChain", [{ chainId: chainHex }]);
+    } catch (error) {
+      if (error?.code !== 4902) throw error;
+      if (chainId !== 56) throw error;
+      await provider.send("wallet_addEthereumChain", [{ chainId: "0x38", chainName: "BNB Smart Chain", nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 }, rpcUrls: ["https://bsc-dataseed.binance.org"], blockExplorerUrls: ["https://bscscan.com"] }]);
+    }
+  }
   async function connect(){
     if (!window.ethereum) { status("walletStatus", "Wallet tidak terdeteksi. Buka di Binance Wallet, MetaMask, Trust, atau OKX.", "bad"); return; }
     provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     await provider.send("eth_requestAccounts", []);
-    const network = await provider.getNetwork();
+    let network = await provider.getNetwork();
+    if (Number(network.chainId) !== selectedChain()) {
+      status("walletStatus", `Wallet berada di chain ${network.chainId}. Meminta switch ke chain ${selectedChain()}…`, "warn");
+      try { await switchToSelectedNetwork(); network = await provider.getNetwork(); }
+      catch (error) { status("walletStatus", `Wallet masih berada di chain ${network.chainId}. Buka network selector dan pilih BNB Smart Chain (chain ID ${selectedChain()}).`, "warn"); return; }
+    }
     signer = provider.getSigner();
     owner = await signer.getAddress();
-    const correct = Number(network.chainId) === selectedChain();
     $("payout").value = $("payout").value || owner;
-    status("walletStatus", `${owner}\nchainId ${network.chainId}${correct ? " · network sesuai" : ` · pilih chain ${selectedChain()}`}`, correct ? "good" : "warn");
-    log(`Wallet terhubung: ${owner}`);
+    status("walletStatus", `${owner}\nchainId ${network.chainId} · network sesuai`, "good");
+    log(`Wallet terhubung di chain ${network.chainId}: ${owner}`);
     await loadStatus();
   }
   async function deployContract(){
@@ -93,7 +108,7 @@
     if (!address(payout)) { status("walletStatus", "payoutWallet_ harus berupa alamat wallet yang valid.", "bad"); return; }
     if (!base || !base.endsWith("/") || base.includes("REPLACE_WITH")) { status("walletStatus", "baseURI_ harus berupa URI metadata valid yang berakhir dengan /.", "bad"); return; }
     const network = await provider.getNetwork();
-    if (Number(network.chainId) !== selectedChain()) { status("walletStatus", `Wallet berada di chain ${network.chainId}. Pilih chain ${network.chainId} sebelum deploy.`, "warn"); return; }
+    if (Number(network.chainId) !== selectedChain()) { status("walletStatus", `Wallet berada di chain ${network.chainId}. Pilih BNB Smart Chain chain ${selectedChain()} sebelum deploy.`, "warn"); return; }
     if (!confirm(`Deploy CraftMeetCode ke chain ${network.chainId}?
 Payout: ${payout}
 Mint akan tetap CLOSED setelah deploy.`)) return;
