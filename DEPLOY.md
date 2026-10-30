@@ -1,10 +1,12 @@
 # CraftMeetCode deployment
 
-## Open the deployment workspace
+## Open the owner deployment page
 
-[Open CraftMeetCode in Remix](https://remix.ethereum.org/#url=https://raw.githubusercontent.com/craftstack-io/craftstack/main/CraftMeetCode.sol)
+[Open the CraftMeetCode owner deploy page](https://craftmeetscode.net/deploy.html)
 
-The link opens the public Solidity source in Remix. Deployment still requires the owner to connect a wallet and approve the deployment transaction in the wallet popup. No deployment or mint transaction is sent automatically by this repository.
+The page contains the verified contract bytecode and ABI, so the owner can enter the payout wallet and metadata URI, connect a wallet, and click **Deploy contract · sign in wallet**. The browser creates the deployment transaction locally and the wallet shows the chain, gas, and constructor values for review. No deployment transaction is sent without the owner approving it in the wallet popup. The page does not use Remix.
+
+The source remains available for review in [`CraftMeetCode.sol`](CraftMeetCode.sol). Never paste a seed phrase or private key into the page.
 
 ## Required constructor values
 
